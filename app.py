@@ -95,10 +95,10 @@ def generate_product_summary_internal(product_name, reviews_df):
 
     # 4. Synthesize Final Paragraph
     final_summary = (
-        f"**Overall Assessment:** {overall_sentiment} ({pos_count} Positive reviews out of {total}). "
+        f"<p style='font-size: 1.1em; line-height: 1.6;'><b>Overall Assessment: <span style='color:#3b82f6;'>{overall_sentiment}</span></b> ({pos_count} Positive reviews out of {total}). "
         f"{sentiment_description} "
         f"{strengths} "
-        f"{weaknesses}"
+        f"{weaknesses}</p>"
     )
     
     return final_summary
@@ -122,7 +122,7 @@ st.markdown("""
         margin-top: 0;
     }
     
-    /* Login Page Styling */
+    /* Login Page Styling - More Polish */
     .login-container {
         display: flex;
         flex-direction: column;
@@ -133,7 +133,7 @@ st.markdown("""
         position: fixed;
         top: 0;
         left: 0;
-        background: linear-gradient(135deg, #f0f2f6 0%, #e0e5ec 100%);
+        background: linear-gradient(135deg, #e0e5ec 0%, #f0f2f6 100%);
     }
     .login-box {
         max-width: 400px;
@@ -141,7 +141,7 @@ st.markdown("""
         padding: 50px 40px;
         border-radius: 16px;
         background-color: #ffffff;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.2); /* Deeper shadow */
         border: 1px solid #dcdcdc;
     }
     
@@ -151,15 +151,20 @@ st.markdown("""
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 25px;
-        min-height: 520px; 
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        min-height: 540px; 
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08); /* Softer shadow */
         background-color: #ffffff;
         text-align: center;
         transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
     }
     .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    .card-content {
+        flex-grow: 1;
     }
 
     /* Custom button styling (Primary action) */
@@ -307,7 +312,9 @@ def main_login_screen():
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
     with st.form("login_form"):
-        st.markdown("<h2 style='text-align: center;'>E-Commerce Analytics Login</h2>", unsafe_allow_html=True)
+        # Enhanced title and header
+        st.markdown("<h2 style='text-align: center; color: #3b82f6;'>📈 E-Commerce Analytics Hub</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #4b5563; margin-bottom: 25px;'>Securely access your data insights.</p>", unsafe_allow_html=True)
         st.markdown("---")
         
         # User input fields
@@ -355,7 +362,7 @@ def show_product_detail(product_id):
         
     product = df_products[df_products['id'] == product_id].iloc[0]
     
-    st.header(f"{product['name']} Detail Analysis (ID: {product_id})")
+    st.header(f"Product Detail Analysis: {product['name']} (ID: {product_id})")
     st.button("← Back to Catalog", on_click=lambda: st.session_state.update({'show_detail_id': None}))
     
     product_reviews = df_reviews[df_reviews['product_id'] == product_id]
@@ -364,19 +371,35 @@ def show_product_detail(product_id):
         st.warning("No reviews available for detailed analysis yet.")
         return
 
-    # 1. Internal Generated Summary (API-FREE)
-    st.subheader("📊 Internal Product Summary")
+    # Split layout for product info and summary
+    col_img, col_summary = st.columns([1, 2])
     
-    summary_placeholder = st.empty()
-    if product_id not in st.session_state['product_summary_cache']:
-        with summary_placeholder:
-            with st.spinner("Analyzing all reviews and synthesizing summary..."):
-                summary = generate_product_summary_internal(product['name'], product_reviews)
-                st.session_state['product_summary_cache'][product_id] = summary
-    
-    summary_placeholder.markdown(st.session_state['product_summary_cache'][product_id])
-    
-    # 2. Product Summary and Metrics (Enhanced Visuals)
+    with col_img:
+        # 1. Product Image and Details
+        st.image(
+            product['image_url'],
+            caption=f"{product['name']} - {product['region']}",
+            width=250,
+            use_column_width='auto',
+            output_format='PNG',
+        )
+        st.markdown(f"**Price:** ₹{product['price']:.2f}")
+        st.markdown(f"**Description:** <span style='font-style: italic; font-size: 0.9em;'>{product['description']}</span>", unsafe_allow_html=True)
+
+    with col_summary:
+        # 2. Internal Generated Summary (Projected Sentiment Analysis)
+        st.subheader("🤖 AI-Free Synthesis & Projected Sentiment Analysis")
+        
+        summary_placeholder = st.empty()
+        if product_id not in st.session_state['product_summary_cache']:
+            with summary_placeholder:
+                with st.spinner("Analyzing all reviews and synthesizing summary..."):
+                    summary = generate_product_summary_internal(product['name'], product_reviews)
+                    st.session_state['product_summary_cache'][product_id] = summary
+        
+        summary_placeholder.markdown(st.session_state['product_summary_cache'][product_id], unsafe_allow_html=True)
+
+    # 3. Product Summary and Metrics (Enhanced Visuals)
     st.markdown("---")
     st.subheader("Review Metrics Breakdown")
 
@@ -395,11 +418,11 @@ def show_product_detail(product_id):
     col_m4.markdown(f'<div class="metric-box neg-metric">{NEGATIVE_EMOJI} Negative Rate<br><b class="neg-text">{neg_p}%</b></div>', unsafe_allow_html=True)
 
 
-    # 3. Time Series and Keywords
+    # 4. Time Series, Keywords, and NEW Insight (Review Length)
     st.markdown("---")
-    st.subheader("Time Trend & Keyword Insights")
+    st.subheader("Time Trend & Deeper Keyword Insights")
     
-    col_time, col_key = st.columns([2, 1])
+    col_time, col_key, col_length = st.columns([2, 1, 1])
 
     with col_time:
         product_reviews_copy = product_reviews.copy()
@@ -416,9 +439,17 @@ def show_product_detail(product_id):
         all_words = get_top_words(product_reviews, n=5)
         st.dataframe(all_words, use_container_width=True, hide_index=True)
 
-        st.markdown("#### Product Details")
-        st.markdown(f"**Price:** ₹{product['price']:.2f}")
-        st.markdown(f"**Region:** {product['region']}")
+    with col_length:
+        st.markdown("#### Review Length Distribution")
+        # Ensure 'review_length' is calculated only once if possible, but recalculate here for safety if not in session state
+        product_reviews['review_length'] = product_reviews['review'].str.len()
+        
+        fig_len = px.histogram(product_reviews, x='review_length', nbins=10, 
+                               labels={'review_length': 'Review Length (Characters)', 'count': 'Number of Reviews'},
+                               title='Review Length Distribution')
+        fig_len.update_layout(showlegend=False, bargap=0.1)
+        st.plotly_chart(fig_len, use_container_width=True)
+
 
 # ----------------------------
 # Main Application Flow
@@ -473,6 +504,8 @@ else:
         # --- Data Preparation for Filtering ---
         display_products = st.session_state['df_products'].copy()
         
+        sentiment_groups = None # Initialize outside if block
+
         if not df_reviews.empty:
             sentiment_groups = df_reviews.groupby('product_id')['sentiment'].value_counts().unstack(fill_value=0)
             sentiment_groups['Total'] = sentiment_groups.sum(axis=1)
@@ -529,17 +562,19 @@ else:
                     # Custom HTML for Card (Integrating Emojis and better layout)
                     st.markdown(f"""
                     <div class="product-card">
-                    <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
-                    <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
-                    <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
-                    <p><b>Price: ₹{product['price']:.2f}</b></p>
-                    
-                    <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
-                        <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
-                        <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
-                        <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
+                    <div class='card-content'>
+                        <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
+                        <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
+                        <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
+                        <p><b>Price: ₹{product['price']:.2f}</b></p>
+                        
+                        <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
+                            <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
+                            <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
+                            <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
+                        </div>
+                        <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     </div>
-                    <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     <div style='height: 10px;'></div> 
                     </div>
                     """, unsafe_allow_html=True)
@@ -589,7 +624,7 @@ else:
 
 
             tabs = st.tabs([
-                "Overall Breakdown", 
+                "Overall Breakdown & Regional View (ENHANCED)", # Tab 0 renamed
                 "Product Performance", 
                 "Top/Worst Performers (NEW)", 
                 "Price Quartile Analysis", 
@@ -597,13 +632,36 @@ else:
                 "Raw Reviews Table"
             ])
 
-            # Tab 1: Overall sentiment 
+            # Tab 1: Overall sentiment & NEW Regional Breakdown
             with tabs[0]:
-                st.subheader("Global Sentiment Distribution")
-                fig = px.pie(st.session_state['df_reviews'], names='sentiment', title="Distribution of All Customer Feedback",
-                             color='sentiment', 
-                             color_discrete_map={'Positive':'#34D399','Neutral':'#FACC15','Negative':'#F87171'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.subheader("Global Sentiment Distribution and Regional Comparison")
+                col_pie, col_region = st.columns(2)
+                
+                with col_pie:
+                    st.markdown("#### Global Sentiment Mix")
+                    fig = px.pie(st.session_state['df_reviews'], names='sentiment', title="Distribution of All Customer Feedback",
+                                color='sentiment', 
+                                color_discrete_map={'Positive':'#34D399','Neutral':'#FACC15','Negative':'#F87171'})
+                    st.plotly_chart(fig, use_container_width=True)
+
+                with col_region:
+                    st.markdown("#### Regional Positive Sentiment Rate")
+                    df_region = df_reviews.merge(df_products[['id', 'region']], left_on='product_id', right_on='id', how='left')
+                    
+                    # Calculate regional positive rate
+                    region_counts = df_region.groupby('region')['sentiment'].value_counts().unstack(fill_value=0)
+                    region_counts['Total'] = region_counts.sum(axis=1)
+                    # Handle potential division by zero if a region has 0 reviews
+                    region_counts['Pos_Rate'] = (region_counts.get('Positive', 0) / region_counts['Total']) * 100
+                    region_counts = region_counts.reset_index().sort_values(by='Pos_Rate', ascending=False)
+                    
+                    fig_region = px.bar(region_counts, x='region', y='Pos_Rate',
+                                        title='Positive Sentiment Rate by Region',
+                                        color='Pos_Rate',
+                                        color_continuous_scale=px.colors.sequential.Bluyl)
+                    fig_region.update_layout(yaxis_title="Positive Rate (%)")
+                    st.plotly_chart(fig_region, use_container_width=True)
+
 
             # Tab 2: Per product sentiment
             with tabs[1]:
@@ -700,7 +758,7 @@ else:
                 with col_pos_extreme:
                     st.markdown("#### Top 5 Most Positive Reviews")
                     for _, row in top_positive.iterrows():
-                        product_name = df_products[df_products['id'] == row['product_id']]['name'].iloc[0]
+                        product_name = df_products[df_products['id'] == row['product_id']]['name'].iloc[0] if not df_products[df_products['id'] == row['product_id']].empty else "Unknown Product"
                         st.success(f"{POSITIVE_EMOJI} **{product_name}** - *{row['sentiment']}*")
                         st.write(f"_{row['review']}_")
                         st.markdown("---")
@@ -708,7 +766,7 @@ else:
                 with col_neg_extreme:
                     st.markdown("#### Top 5 Most Negative Reviews")
                     for _, row in top_negative.iterrows():
-                        product_name = df_products[df_products['id'] == row['product_id']]['name'].iloc[0]
+                        product_name = df_products[df_products['id'] == row['product_id']]['name'].iloc[0] if not df_products[df_products['id'] == row['product_id']].empty else "Unknown Product"
                         st.error(f"{NEGATIVE_EMOJI} **{product_name}** - *{row['sentiment']}*")
                         st.write(f"_{row['review']}_")
                         st.markdown("---")
@@ -739,6 +797,7 @@ else:
                 filtered_reviews = df_reviews[df_reviews['sentiment'].isin(review_filter)].copy()
                 
                 filtered_reviews = filtered_reviews[filtered_reviews['timestamp'].dt.date >= min_date]
+                # Calculate review length here just in case it wasn't done earlier
                 filtered_reviews['review_length'] = filtered_reviews['review'].str.len()
                 filtered_reviews = filtered_reviews[filtered_reviews['review_length'] >= min_length]
 
