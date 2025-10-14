@@ -46,9 +46,16 @@ USERS = {
 # --- Internal Review Synthesis Logic & Sentiment Functions ---
 
 def calculate_ema_trend(df_daily_counts, days=30, smoothing_factor=0.2):
-    """Calculates Exponential Moving Average (EMA) for Positive Rate."""
+    """
+    Calculates Exponential Moving Average (EMA) for Positive Rate.
+    
+    FIX: Ensures 'Positive', 'Neutral', and 'Negative' columns exist 
+    to prevent KeyError if a sentiment is missing on all dates.
+    """
     if df_daily_counts.empty: return pd.Series()
     
+    sentiment_cols = ['Positive', 'Neutral', 'Negative']
+
     # 1. Fill in missing dates for a smoother time series
     start_date = df_daily_counts['date'].min()
     end_date = df_daily_counts['date'].max()
@@ -57,7 +64,16 @@ def calculate_ema_trend(df_daily_counts, days=30, smoothing_factor=0.2):
     df_ts = df_daily_counts.set_index('date')
     df_ts = df_ts.reindex(date_range, fill_value=0).reset_index().rename(columns={'index': 'date'})
     
+    # **FIX APPLIED HERE:** Ensure all required sentiment columns exist and are integers
+    for col in sentiment_cols:
+        if col not in df_ts.columns:
+            df_ts[col] = 0
+        else:
+            # Ensure they are integers
+            df_ts[col] = df_ts[col].astype(int) 
+            
     # 2. Calculate Daily Positive Rate (handle division by zero)
+    # This line now safely accesses 'Positive', 'Neutral', and 'Negative'
     df_ts['Total'] = df_ts['Positive'] + df_ts['Neutral'] + df_ts['Negative']
     df_ts['Daily_Pos_Rate'] = np.where(df_ts['Total'] > 0, (df_ts['Positive'] / df_ts['Total']) * 100, 0)
     
@@ -647,6 +663,7 @@ def show_product_detail(product_id):
     
     product_reviews_copy = product_reviews.copy()
     product_reviews_copy['date'] = product_reviews_copy['timestamp'].dt.normalize()
+    # Ensure fill_value=0 is used after unstack to handle dates with no reviews
     time_series = product_reviews_copy.groupby(['date', 'sentiment']).size().unstack(fill_value=0).reset_index()
 
     ema_df = calculate_ema_trend(time_series)
@@ -655,7 +672,15 @@ def show_product_detail(product_id):
     
     with col_time:
         st.markdown("#### Daily Sentiment Trend")
-        df_plot = time_series.melt(id_vars='date', value_vars=['Positive', 'Neutral', 'Negative'], var_name='sentiment', value_name='count')
+        
+        # Ensure 'Positive', 'Neutral', 'Negative' columns exist for plotting, filling with 0 if missing
+        plot_cols = ['Positive', 'Neutral', 'Negative']
+        for col in plot_cols:
+            if col not in time_series.columns:
+                time_series[col] = 0
+                
+        df_plot = time_series.melt(id_vars='date', value_vars=plot_cols, var_name='sentiment', value_name='count')
+        
         fig_time = px.line(df_plot, x='date', y='count', color='sentiment',
                            color_discrete_map={'Positive':'#059669','Neutral':'#f59e0b','Negative':'#dc2626'})
         st.plotly_chart(fig_time, use_container_width=True)
