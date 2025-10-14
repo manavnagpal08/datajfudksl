@@ -618,7 +618,7 @@ def show_product_detail(product_id):
     col_img, col_summary = st.columns([1, 2])
     
     with col_img:
-        st.image(product['image_url'], caption=f"{product['name']}", width=250, use_column_width='auto', output_format='PNG',)
+        st.image(product['image_url'], caption=f"{product['name']}", width=250, use_container_width='auto', output_format='PNG',)
         st.markdown(f"**Price:** ₹{product['price']:.2f}")
         st.markdown(f"**Region:** {product['region']}")
         st.markdown(f"**Category:** **{product['category']}**")
