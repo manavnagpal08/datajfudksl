@@ -1,16 +1,125 @@
 product_id,review,sentiment,timestamp,upvotes,downvotes,reviewer_type,manager_reply
-P004,"Average experience, nothing special.",Negative,2024-05-27 00:00:00,24,9,Guest,Thank you for your feedback!
-P005,Good quality but could be cheaper.,Neutral,2024-11-20 00:00:00,42,7,Guest,
-P001,Amazing design and comfort.,Negative,2024-04-12 00:00:00,32,9,Verified Buyer,Thank you for your feedback!
-P002,Customer service could be better.,Positive,2024-11-26 00:00:00,21,10,Guest,We’ll look into this issue.
-P001,Great battery life and build quality.,Neutral,2024-02-25 00:00:00,10,0,Guest,
-P004,Not satisfied with the sound quality.,Neutral,2024-04-19 00:00:00,7,1,Verified Buyer,Thank you for your feedback!
-P003,Amazing design and comfort.,Neutral,2024-07-23 00:00:00,6,6,Verified Buyer,Glad you liked it!
-P003,Customer service could be better.,Negative,2024-10-22 00:00:00,16,5,Verified Buyer,
-P004,Customer service could be better.,Positive,2024-12-20 00:00:00,46,0,Verified Buyer,We’ll look into this issue.
-P003,Customer service could be better.,Neutral,2024-05-29 00:00:00,0,8,Verified Buyer,
-P003,Excellent product! Works as expected.,Negative,2024-07-16 00:00:00,44,0,Verified Buyer,
-P001,Decent performance for the price.,Neutral,2024-04-09 00:00:00,41,1,Verified Buyer,Thank you for your feedback!
-P005,Customer service could be better.,Negative,2024-06-15 00:00:00,7,4,Guest,Thank you for your feedback!
-P005,Decent performance for the price.,Neutral,2024-12-20 00:00:00,9,4,Verified Buyer,Thank you for your feedback!
-P003,Decent performance for the price.,Negative,2024-09-23 00:00:00,42,6,Verified Buyer,Thank you for your feedback!
+P001,Stopped working after a few weeks.,Positive,2024-02-17 00:00:00,37,7,Guest,Thank you for your feedback!
+P001,Product arrived on time and in good condition.,Positive,2024-03-06 00:00:00,24,7,Verified Buyer,
+P001,Disappointed with the performance.,Neutral,2024-05-21 00:00:00,34,0,Guest,Thank you for your feedback!
+P001,Amazing build quality and fast delivery.,Positive,2024-08-03 00:00:00,32,2,Guest,We’ll look into this issue.
+P001,Stopped working after a few weeks.,Positive,2024-08-02 00:00:00,2,2,Guest,We’ll look into this issue.
+P002,Good quality but could be a bit cheaper.,Negative,2024-05-20 00:00:00,22,0,Verified Buyer,We’ll look into this issue.
+P002,"Perfect fit for my needs, highly recommend!",Neutral,2024-07-07 00:00:00,8,8,Verified Buyer,We’ll look into this issue.
+P002,Customer service was helpful and quick to respond.,Neutral,2024-10-01 00:00:00,23,5,Guest,Thank you for your feedback!
+P002,Amazing build quality and fast delivery.,Negative,2024-08-14 00:00:00,1,6,Verified Buyer,Thank you for your feedback!
+P003,"Average experience, nothing special.",Positive,2024-07-05 00:00:00,2,5,Guest,
+P003,Disappointed with the performance.,Negative,2024-03-20 00:00:00,41,8,Guest,
+P003,"Perfect fit for my needs, highly recommend!",Neutral,2024-01-11 00:00:00,4,0,Guest,
+P003,Customer service was helpful and quick to respond.,Positive,2024-09-25 00:00:00,38,2,Guest,We’ll look into this issue.
+P003,"Perfect fit for my needs, highly recommend!",Neutral,2024-07-31 00:00:00,41,1,Verified Buyer,Thank you for your feedback!
+P004,Amazing build quality and fast delivery.,Positive,2024-04-05 00:00:00,34,6,Guest,Thank you for your feedback!
+P004,"Satisfied with my purchase, would recommend.",Neutral,2024-08-05 00:00:00,44,9,Guest,
+P004,"Satisfied with my purchase, would recommend.",Neutral,2024-04-13 00:00:00,49,6,Verified Buyer,
+P004,Disappointed with the performance.,Positive,2024-09-29 00:00:00,26,4,Verified Buyer,We’ll look into this issue.
+P004,Amazing build quality and fast delivery.,Neutral,2024-10-16 00:00:00,4,4,Guest,Glad you liked it!
+P005,Amazing build quality and fast delivery.,Neutral,2024-08-31 00:00:00,37,0,Verified Buyer,We’ll look into this issue.
+P005,Amazing build quality and fast delivery.,Positive,2024-01-20 00:00:00,41,2,Verified Buyer,We’ll look into this issue.
+P005,"Average experience, nothing special.",Positive,2024-01-09 00:00:00,23,2,Verified Buyer,We’ll look into this issue.
+P005,"Perfect fit for my needs, highly recommend!",Positive,2024-08-27 00:00:00,49,5,Guest,We’ll look into this issue.
+P006,Amazing build quality and fast delivery.,Neutral,2024-10-18 00:00:00,32,5,Verified Buyer,Glad you liked it!
+P006,Stopped working after a few weeks.,Neutral,2024-03-16 00:00:00,38,9,Guest,Thank you for your feedback!
+P006,"Satisfied with my purchase, would recommend.",Neutral,2024-04-07 00:00:00,16,6,Verified Buyer,Glad you liked it!
+P006,Good quality but could be a bit cheaper.,Neutral,2024-07-13 00:00:00,48,0,Guest,We’ll look into this issue.
+P006,"Perfect fit for my needs, highly recommend!",Neutral,2024-02-10 00:00:00,28,0,Verified Buyer,Thank you for your feedback!
+P007,"Average experience, nothing special.",Neutral,2024-09-07 00:00:00,0,7,Verified Buyer,
+P007,Disappointed with the performance.,Neutral,2024-07-17 00:00:00,11,1,Guest,
+P007,Stopped working after a few weeks.,Negative,2024-07-24 00:00:00,26,4,Guest,
+P007,Excellent product! Works exactly as described.,Positive,2024-09-26 00:00:00,49,5,Verified Buyer,We’ll look into this issue.
+P008,"Perfect fit for my needs, highly recommend!",Negative,2024-01-08 00:00:00,34,10,Guest,
+P008,"Satisfied with my purchase, would recommend.",Neutral,2024-09-23 00:00:00,29,8,Verified Buyer,
+P008,Excellent product! Works exactly as described.,Neutral,2024-07-12 00:00:00,46,3,Verified Buyer,
+P008,"Satisfied with my purchase, would recommend.",Neutral,2024-12-24 00:00:00,7,0,Verified Buyer,Thank you for your feedback!
+P008,Customer service was helpful and quick to respond.,Neutral,2024-06-27 00:00:00,47,6,Guest,Glad you liked it!
+P009,"Perfect fit for my needs, highly recommend!",Negative,2024-07-30 00:00:00,3,9,Verified Buyer,
+P009,Stopped working after a few weeks.,Negative,2024-03-11 00:00:00,33,7,Guest,
+P009,Customer service was helpful and quick to respond.,Neutral,2024-05-09 00:00:00,30,3,Guest,Glad you liked it!
+P009,"Perfect fit for my needs, highly recommend!",Positive,2024-12-30 00:00:00,25,7,Verified Buyer,We’ll look into this issue.
+P010,"Average experience, nothing special.",Positive,2024-01-03 00:00:00,29,2,Guest,
+P010,Good quality but could be a bit cheaper.,Negative,2024-03-17 00:00:00,38,10,Verified Buyer,We’ll look into this issue.
+P010,"Average experience, nothing special.",Neutral,2024-01-08 00:00:00,9,3,Guest,Glad you liked it!
+P010,Excellent product! Works exactly as described.,Neutral,2024-06-02 00:00:00,10,6,Guest,
+P010,Amazing build quality and fast delivery.,Negative,2024-01-11 00:00:00,0,4,Guest,We’ll look into this issue.
+P011,Customer service was helpful and quick to respond.,Neutral,2024-12-07 00:00:00,49,8,Guest,We’ll look into this issue.
+P011,"Average experience, nothing special.",Positive,2024-10-15 00:00:00,4,6,Guest,Glad you liked it!
+P011,"Average experience, nothing special.",Negative,2024-02-22 00:00:00,45,8,Verified Buyer,Thank you for your feedback!
+P011,"Average experience, nothing special.",Neutral,2024-10-21 00:00:00,42,10,Guest,
+P012,"Satisfied with my purchase, would recommend.",Positive,2024-08-15 00:00:00,8,0,Verified Buyer,Glad you liked it!
+P012,Excellent product! Works exactly as described.,Neutral,2024-03-29 00:00:00,47,7,Guest,
+P012,Amazing build quality and fast delivery.,Neutral,2024-01-17 00:00:00,48,10,Verified Buyer,Thank you for your feedback!
+P012,Disappointed with the performance.,Positive,2024-01-23 00:00:00,38,2,Guest,Thank you for your feedback!
+P012,Product arrived on time and in good condition.,Neutral,2024-03-06 00:00:00,33,1,Verified Buyer,We’ll look into this issue.
+P013,Amazing build quality and fast delivery.,Neutral,2024-10-06 00:00:00,45,6,Guest,Glad you liked it!
+P013,Amazing build quality and fast delivery.,Negative,2024-01-16 00:00:00,18,6,Verified Buyer,We’ll look into this issue.
+P013,Amazing build quality and fast delivery.,Neutral,2024-11-23 00:00:00,0,3,Verified Buyer,We’ll look into this issue.
+P013,"Average experience, nothing special.",Neutral,2024-02-07 00:00:00,48,10,Guest,
+P013,Disappointed with the performance.,Neutral,2024-03-31 00:00:00,46,8,Verified Buyer,
+P014,Good quality but could be a bit cheaper.,Positive,2024-09-04 00:00:00,32,4,Guest,We’ll look into this issue.
+P014,Disappointed with the performance.,Positive,2024-04-15 00:00:00,19,9,Guest,We’ll look into this issue.
+P014,Disappointed with the performance.,Positive,2024-09-08 00:00:00,9,3,Guest,Thank you for your feedback!
+P014,Stopped working after a few weeks.,Positive,2024-07-18 00:00:00,5,2,Verified Buyer,We’ll look into this issue.
+P014,Product arrived on time and in good condition.,Neutral,2024-11-21 00:00:00,26,0,Verified Buyer,Glad you liked it!
+P015,"Perfect fit for my needs, highly recommend!",Negative,2024-03-07 00:00:00,14,1,Guest,Thank you for your feedback!
+P015,"Perfect fit for my needs, highly recommend!",Neutral,2024-11-30 00:00:00,4,2,Verified Buyer,Thank you for your feedback!
+P015,Product arrived on time and in good condition.,Neutral,2024-03-20 00:00:00,43,6,Guest,Glad you liked it!
+P015,"Satisfied with my purchase, would recommend.",Neutral,2024-08-08 00:00:00,10,6,Verified Buyer,
+P015,Product arrived on time and in good condition.,Negative,2024-12-17 00:00:00,47,0,Verified Buyer,
+P016,Product arrived on time and in good condition.,Positive,2024-10-02 00:00:00,44,3,Verified Buyer,We’ll look into this issue.
+P016,"Satisfied with my purchase, would recommend.",Neutral,2024-06-23 00:00:00,10,4,Verified Buyer,Glad you liked it!
+P016,Disappointed with the performance.,Neutral,2024-11-25 00:00:00,26,9,Guest,We’ll look into this issue.
+P016,Excellent product! Works exactly as described.,Neutral,2024-12-15 00:00:00,40,0,Verified Buyer,Glad you liked it!
+P016,Good quality but could be a bit cheaper.,Positive,2024-12-30 00:00:00,11,10,Verified Buyer,
+P017,Good quality but could be a bit cheaper.,Negative,2024-01-17 00:00:00,28,9,Verified Buyer,
+P017,Customer service was helpful and quick to respond.,Positive,2024-03-27 00:00:00,39,8,Verified Buyer,Thank you for your feedback!
+P017,Customer service was helpful and quick to respond.,Positive,2024-03-13 00:00:00,37,1,Verified Buyer,We’ll look into this issue.
+P017,"Average experience, nothing special.",Neutral,2024-08-20 00:00:00,46,0,Guest,Glad you liked it!
+P017,Amazing build quality and fast delivery.,Negative,2024-09-22 00:00:00,35,2,Guest,Glad you liked it!
+P018,Good quality but could be a bit cheaper.,Positive,2024-05-24 00:00:00,47,9,Verified Buyer,We’ll look into this issue.
+P018,Customer service was helpful and quick to respond.,Negative,2024-07-11 00:00:00,50,5,Guest,
+P018,Amazing build quality and fast delivery.,Positive,2024-06-06 00:00:00,1,1,Guest,Thank you for your feedback!
+P018,Good quality but could be a bit cheaper.,Neutral,2024-09-21 00:00:00,38,4,Verified Buyer,Glad you liked it!
+P019,Product arrived on time and in good condition.,Negative,2024-01-16 00:00:00,24,0,Guest,Thank you for your feedback!
+P019,Disappointed with the performance.,Negative,2024-10-01 00:00:00,50,1,Verified Buyer,Glad you liked it!
+P019,Amazing build quality and fast delivery.,Negative,2024-08-22 00:00:00,0,4,Verified Buyer,We’ll look into this issue.
+P019,Stopped working after a few weeks.,Negative,2024-11-18 00:00:00,20,9,Guest,Thank you for your feedback!
+P019,Disappointed with the performance.,Positive,2024-11-30 00:00:00,7,8,Guest,Thank you for your feedback!
+P020,Amazing build quality and fast delivery.,Negative,2024-10-31 00:00:00,29,5,Verified Buyer,Glad you liked it!
+P020,"Satisfied with my purchase, would recommend.",Neutral,2024-12-30 00:00:00,10,7,Verified Buyer,
+P020,Amazing build quality and fast delivery.,Negative,2024-09-06 00:00:00,9,4,Verified Buyer,Glad you liked it!
+P020,"Average experience, nothing special.",Positive,2024-11-03 00:00:00,7,8,Guest,
+P020,Product arrived on time and in good condition.,Positive,2024-03-15 00:00:00,37,2,Verified Buyer,We’ll look into this issue.
+P021,Customer service was helpful and quick to respond.,Neutral,2024-08-25 00:00:00,32,8,Guest,We’ll look into this issue.
+P021,Disappointed with the performance.,Positive,2024-12-11 00:00:00,11,0,Guest,We’ll look into this issue.
+P021,"Satisfied with my purchase, would recommend.",Positive,2024-03-10 00:00:00,35,1,Verified Buyer,Thank you for your feedback!
+P021,Excellent product! Works exactly as described.,Positive,2024-01-18 00:00:00,1,4,Guest,Thank you for your feedback!
+P022,Customer service was helpful and quick to respond.,Positive,2024-03-03 00:00:00,11,0,Guest,Glad you liked it!
+P022,Excellent product! Works exactly as described.,Negative,2024-06-13 00:00:00,44,2,Guest,Thank you for your feedback!
+P022,Stopped working after a few weeks.,Positive,2024-09-04 00:00:00,25,4,Guest,Thank you for your feedback!
+P022,Amazing build quality and fast delivery.,Positive,2024-09-09 00:00:00,46,10,Guest,
+P023,Stopped working after a few weeks.,Neutral,2024-06-27 00:00:00,5,9,Verified Buyer,Thank you for your feedback!
+P023,Product arrived on time and in good condition.,Positive,2024-01-10 00:00:00,3,1,Verified Buyer,
+P023,Disappointed with the performance.,Negative,2024-05-20 00:00:00,47,1,Guest,We’ll look into this issue.
+P023,Good quality but could be a bit cheaper.,Negative,2024-01-14 00:00:00,33,7,Guest,
+P024,Disappointed with the performance.,Negative,2024-06-13 00:00:00,38,8,Verified Buyer,We’ll look into this issue.
+P024,Stopped working after a few weeks.,Positive,2024-01-21 00:00:00,4,1,Guest,
+P024,Amazing build quality and fast delivery.,Neutral,2024-01-12 00:00:00,43,3,Guest,Glad you liked it!
+P024,Customer service was helpful and quick to respond.,Negative,2024-01-27 00:00:00,35,6,Verified Buyer,Thank you for your feedback!
+P024,Customer service was helpful and quick to respond.,Neutral,2024-04-25 00:00:00,3,6,Guest,
+P025,Good quality but could be a bit cheaper.,Negative,2024-06-23 00:00:00,39,6,Guest,Thank you for your feedback!
+P025,Good quality but could be a bit cheaper.,Neutral,2024-10-01 00:00:00,41,7,Verified Buyer,Glad you liked it!
+P025,"Perfect fit for my needs, highly recommend!",Negative,2024-11-27 00:00:00,27,10,Guest,Thank you for your feedback!
+P025,Amazing build quality and fast delivery.,Neutral,2024-01-14 00:00:00,38,1,Guest,
+P026,Good quality but could be a bit cheaper.,Positive,2024-01-10 00:00:00,38,0,Guest,Glad you liked it!
+P026,Good quality but could be a bit cheaper.,Positive,2024-02-08 00:00:00,0,7,Guest,
+P026,"Perfect fit for my needs, highly recommend!",Positive,2024-01-10 00:00:00,31,1,Guest,Thank you for your feedback!
+P026,Stopped working after a few weeks.,Neutral,2024-11-20 00:00:00,31,5,Guest,Thank you for your feedback!
+P026,Disappointed with the performance.,Neutral,2024-07-15 00:00:00,39,6,Verified Buyer,Glad you liked it!
+P027,Good quality but could be a bit cheaper.,Positive,2024-06-06 00:00:00,8,5,Guest,Glad you liked it!
+P027,Amazing build quality and fast delivery.,Negative,2024-12-17 00:00:00,26,3,Guest,Thank you for your feedback!
+P027,Amazing build quality and fast delivery.,Positive,2024-06-26 00:00:00,41,8,Guest,We’ll look into this issue.
+P027,Amazing build quality and fast delivery.,Positive,2024-04-12 00:00:00,38,9,Guest,Glad you liked it!
