@@ -260,13 +260,15 @@ else:
                     submitted = st.form_submit_button("Add Product")
                     
                     if submitted:
+                        # FIX: Moved global declaration to the very top of the submission block
+                        global df_products
+                        
                         new_id = df_products['id'].max() + 1 if not df_products.empty else 1
                         new_id = int(new_id) 
                         
                         new_row = pd.DataFrame([[new_id, name, price, region, image_url, description]],
                                                 columns=df_products.columns)
-                        # FIX: Add global declaration before assignment
-                        global df_products
+                        
                         df_products = pd.concat([df_products, new_row], ignore_index=True)
                         save_products(df_products)
                         st.success(f"Product '{name}' (ID: {new_id}) added successfully! **Refresh to see changes.**")
@@ -278,16 +280,18 @@ else:
                     delete_submitted = st.form_submit_button("Delete Product")
 
                     if delete_submitted:
+                        # FIX: Moved global declarations to the very top of the submission block
+                        global df_products
+                        global df_reviews
+                        
                         if delete_id in df_products['id'].values:
                             product_name = df_products[df_products['id'] == delete_id]['name'].iloc[0]
                             
-                            # FIX: Add global declaration before assignment
-                            global df_products
+                            # Modification of df_products
                             df_products = df_products[df_products['id'] != delete_id]
                             save_products(df_products)
                             
-                            # FIX: Add global declaration before assignment
-                            global df_reviews
+                            # Modification of df_reviews
                             reviews_deleted = len(df_reviews[df_reviews['product_id'] == delete_id])
                             df_reviews = df_reviews[df_reviews['product_id'] != delete_id]
                             save_reviews(df_reviews)
@@ -321,14 +325,15 @@ else:
                     if bulk_df.empty or not all(col in bulk_df.columns for col in required_cols):
                         st.error(f"Uploaded file is empty or missing required columns: {required_cols}")
                     else:
+                        # FIX: Added global declaration for modification
+                        global df_products
+                        
                         start_id = df_products['id'].max() + 1 if not df_products.empty else 1
                         bulk_df['id'] = range(int(start_id), int(start_id) + len(bulk_df))
                         
                         bulk_df['price'] = pd.to_numeric(bulk_df['price'], errors='coerce')
                         bulk_df.dropna(subset=['price'], inplace=True)
                         
-                        # FIX: Add global declaration before assignment
-                        global df_products
                         df_products = pd.concat([df_products, bulk_df[['id'] + required_cols]], ignore_index=True)
                         save_products(df_products)
                         st.success(f"{len(bulk_df)} products added successfully from {file_extension.upper()} file! **Hard refresh to update view.**")
@@ -380,7 +385,7 @@ else:
                     override_submitted = st.form_submit_button("Override Sentiment")
 
                     if override_submitted:
-                        # FIX: Add global declaration before assignment
+                        # FIX: Added global declaration for modification
                         global df_reviews
                         df_reviews.loc[selected_review_index, 'sentiment'] = new_sentiment
                         save_reviews(df_reviews)
@@ -392,7 +397,7 @@ else:
         st.subheader("🧹 Database Maintenance")
         if st.button("🔴 Clear ALL Reviews (DANGER ZONE)", help="This action is irreversible."):
             if st.session_state.get('confirm_clear_reviews', False):
-                # FIX: Add global declaration before assignment
+                # FIX: Added global declaration for modification
                 global df_reviews
                 df_reviews = pd.DataFrame(columns=['product_id', 'review', 'sentiment', 'timestamp'])
                 df_reviews['product_id'] = df_reviews['product_id'].astype('Int64')
@@ -483,13 +488,14 @@ else:
                         submit_review = st.button("Submit Review & See Sentiment", key=f"submit_review_{product_id}")
                         
                         if submit_review and review_text.strip() != "":
+                            # FIX: Added global declaration for modification
+                            global df_reviews
+
                             sentiment = predict_sentiment(review_text)
                             
                             new_review = pd.DataFrame([[product_id, review_text, sentiment, datetime.now()]],
                                                         columns=['product_id', 'review', 'sentiment', 'timestamp'])
                             
-                            # FIX: Add global declaration before assignment
-                            global df_reviews
                             df_reviews = pd.concat([df_reviews, new_review], ignore_index=True)
                             save_reviews(df_reviews)
                             
