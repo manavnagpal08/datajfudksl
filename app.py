@@ -482,9 +482,7 @@ model_ready = st.session_state['vectorizer'] is not None and st.session_state['c
 if not model_ready:
     st.error("🚨 Sentiment Model Not Found! Prediction functionality is disabled.")
 
-# Apply theme CSS based on session state
-apply_theme_css(st.session_state['dark_mode'])
-
+# Apply theme CSS base
 # --- Auto Refresh Logic (Runs before content display) ---
 if st.session_state.get('auto_refresh', False):
     refresh_interval = 10 # Seconds
