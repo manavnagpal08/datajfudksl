@@ -2,5 +2,27 @@ id,name,price,region,image_url,description,category
 P001,Wireless Headphones,2499.99,North,https://example.com/images/headphones.jpg,High-quality wireless headphones with noise cancellation and 20-hour battery life.,Electronics
 P002,Smartwatch,4999.0,West,https://example.com/images/smartwatch.jpg,Feature-packed smartwatch with fitness tracking and water resistance.,Wearables
 P003,Bluetooth Speaker,1799.5,East,https://example.com/images/speaker.jpg,"Portable speaker with rich bass, Bluetooth 5.0, and 10-hour playback time.",Electronics
-P004,Eco-Friendly Water Bottle,699.0,South,https://example.com/images/bottle.jpg,"Reusable stainless steel bottle, keeps drinks hot or cold for hours.",Home & Kitchen
-P005,Yoga Mat,1299.75,Central,https://example.com/images/yogamat.jpg,"Non-slip, eco-friendly yoga mat ideal for all types of workouts.",Fitness
+P004,Wireless Mouse,799.0,South,https://example.com/images/mouse.jpg,Ergonomic wireless mouse with adjustable DPI.,Electronics
+P005,Laptop Stand,999.0,Central,https://example.com/images/laptopstand.jpg,Adjustable aluminum laptop stand for better posture and cooling.,Accessories
+P006,Noise Cancelling Earbuds,3299.0,North,https://example.com/images/earbuds.jpg,Compact earbuds with active noise cancellation and long battery life.,Electronics
+P007,Smart Home Plug,899.0,West,https://example.com/images/smartplug.jpg,Control your devices remotely via voice or app.,Smart Devices
+P008,Gaming Keyboard,2499.0,East,https://example.com/images/keyboard.jpg,RGB mechanical keyboard for pro gamers.,Electronics
+P009,Eco-Friendly Water Bottle,699.0,South,https://example.com/images/bottle.jpg,"Reusable stainless steel bottle, keeps drinks hot or cold for hours.",Home & Kitchen
+P010,Electric Kettle,1199.0,Central,https://example.com/images/kettle.jpg,Quick-boil kettle with auto shut-off and LED indicator.,Home & Kitchen
+P011,Air Fryer,5499.0,North,https://example.com/images/airfryer.jpg,Fry your favorite foods with up to 90% less oil.,Home & Kitchen
+P012,Induction Cooktop,2999.0,West,https://example.com/images/induction.jpg,Fast and efficient induction stove with touch controls.,Home & Kitchen
+P013,Vacuum Cleaner,6499.0,East,https://example.com/images/vacuum.jpg,Bagless vacuum cleaner with powerful suction and HEPA filter.,Home Appliances
+P014,Yoga Mat,1299.75,Central,https://example.com/images/yogamat.jpg,"Non-slip, eco-friendly yoga mat ideal for all workouts.",Fitness
+P015,Resistance Bands Set,999.0,North,https://example.com/images/bands.jpg,Set of 5 resistance bands for strength training.,Fitness
+P016,Dumbbell Set,2499.0,West,https://example.com/images/dumbbells.jpg,Adjustable dumbbells suitable for home workouts.,Fitness
+P017,Foam Roller,799.0,East,https://example.com/images/foamroller.jpg,Helps relieve sore muscles and improve flexibility.,Fitness
+P018,Leather Wallet,1199.0,South,https://example.com/images/wallet.jpg,Genuine leather wallet with multiple compartments.,Fashion
+P019,Sunglasses,899.0,Central,https://example.com/images/sunglasses.jpg,UV-protected unisex sunglasses with a stylish frame.,Fashion
+P020,Wrist Watch,3499.0,North,https://example.com/images/watch.jpg,Classic wrist watch with analog display.,Fashion
+P021,Backpack,1799.0,West,https://example.com/images/backpack.jpg,Durable backpack with multiple compartments and laptop sleeve.,Accessories
+P022,Sneakers,2999.0,East,https://example.com/images/sneakers.jpg,Comfortable sneakers with breathable mesh design.,Fashion
+P023,Face Moisturizer,599.0,South,https://example.com/images/moisturizer.jpg,Hydrating moisturizer suitable for all skin types.,Beauty
+P024,Hair Dryer,1999.0,Central,https://example.com/images/hairdryer.jpg,Powerful yet compact hair dryer with 3 heat settings.,Beauty
+P025,Electric Toothbrush,1499.0,North,https://example.com/images/toothbrush.jpg,Rechargeable toothbrush for deep and effective cleaning.,Personal Care
+P026,Beard Trimmer,1799.0,West,https://example.com/images/trimmer.jpg,Precision trimmer with multiple length settings.,Personal Care
+P027,Perfume Spray,1299.0,East,https://example.com/images/perfume.jpg,Long-lasting fragrance for daily wear.,Beauty
