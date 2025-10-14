@@ -1,7 +1,11 @@
-product_id,review
-1,This phone is amazing!
-1,Battery life is too short.
-2,Laptop runs smoothly.
-2,Screen resolution could be better.
-3,Great sound quality!
-3,Very uncomfortable to wear.
+product_id,review,sentiment,timestamp,upvotes,downvotes,reviewer_type,manager_reply
+P001,Mouse is very responsive and silent. Highly recommend.,Positive,2025-10-10 14:30:00,15,1,Verified Buyer,
+P001,It's just an average mouse. Nothing special about it.,Neutral,2025-10-08 09:15:00,2,5,Guest,
+P002,SSD speeds are fantastic for my large video files!,Positive,2025-10-11 11:00:00,10,0,Verified Buyer,
+P002,Failed after only two weeks of use. Totally unreliable!,Negative,2025-10-09 20:45:00,4,12,Verified Buyer,"We sincerely apologize for the inconvenience and have sent you a replacement immediately."
+P003,Great bottle, but the lid leaks if I don't screw it tightly.,Neutral,2025-10-05 16:20:00,8,3,Guest,
+P004,The coffee flavor is robust and smooth, excellent blend.,Positive,2025-10-12 07:30:00,20,0,Verified Buyer,
+P005,Best headphones I've ever owned. The ANC is superb.,Positive,2025-10-07 18:00:00,30,2,Verified Buyer,
+P005,They fit uncomfortably on my ears after about an hour.,Negative,2025-10-06 12:55:00,1,7,Guest,
+P006,The bamboo feels cheap and splintered quickly.,Negative,2025-10-04 15:40:00,0,9,Verified Buyer,
+P007,Good value for the price, but the roast is too dark.,Neutral,2025-10-03 10:10:00,3,1,Guest,
