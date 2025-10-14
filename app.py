@@ -5,8 +5,8 @@ import os
 import json 
 import plotly.express as px
 from datetime import datetime
-from collections import Counter # ADDED: Required for word analysis
-import re # ADDED: Required for word analysis
+from collections import Counter
+import re
 
 # --- Configuration and Constants ---
 PRODUCTS_FILE = "data/products.csv"
@@ -71,7 +71,7 @@ st.markdown("""
 # ----------------------------
 
 @st.cache_data(show_spinner="Loading Data...")
-def load_data():
+def load_initial_data():
     """Loads and initializes products and reviews DataFrames."""
     os.makedirs("data", exist_ok=True)
 
@@ -80,12 +80,10 @@ def load_data():
         df_products = pd.read_csv(PRODUCTS_FILE)
     else:
         df_products = pd.DataFrame(columns=['id', 'name', 'price', 'region', 'image_url', 'description'])
-        df_products['id'] = df_products['id'].astype('Int64')
-        df_products.to_csv(PRODUCTS_FILE, index=False)
-    
+        
     df_products['id'] = pd.to_numeric(df_products['id'], errors='coerce').fillna(0).astype('Int64')
     
-    # --- Reviews Initialization (Robust against KeyError) ---
+    # --- Reviews Initialization ---
     REVIEW_COLUMNS = ['product_id', 'review', 'sentiment', 'timestamp'] 
     df_reviews = pd.DataFrame(columns=REVIEW_COLUMNS)
     
@@ -110,20 +108,21 @@ def load_data():
     df_reviews['timestamp'] = df_reviews['timestamp'].fillna(pd.to_datetime('2024-01-01 00:00:00'))
     
     if df_reviews.empty and (not os.path.exists(REVIEWS_FILE) or os.path.getsize(REVIEWS_FILE) == 0):
-         df_reviews.to_csv(REVIEWS_FILE, index=False)
+         df_reviews.to_csv(REVIEWS_FILE, index=False) # Ensure an empty file structure if starting fresh
 
     return df_products, df_reviews
 
-def save_products(df):
-    """Saves the products DataFrame to CSV."""
-    df.to_csv(PRODUCTS_FILE, index=False)
+def save_products():
+    """Saves the products DataFrame from session state to CSV."""
+    st.session_state['df_products'].to_csv(PRODUCTS_FILE, index=False)
 
-def save_reviews(df):
-    """Saves the reviews DataFrame to CSV."""
-    df.to_csv(REVIEWS_FILE, index=False)
+def save_reviews():
+    """Saves the reviews DataFrame from session state to CSV."""
+    st.session_state['df_reviews'].to_csv(REVIEWS_FILE, index=False)
 
 def predict_sentiment(text):
     """Uses the loaded model to predict sentiment."""
+    # Prediction logic remains the same, using cached model/vectorizer
     try:
         if 'vectorizer' not in st.session_state:
             st.session_state['vectorizer'] = pickle.load(open(VECTORIZER_PATH, "rb"))
@@ -142,7 +141,6 @@ def get_top_words(df_subset, n=20):
     if df_subset.empty:
         return pd.DataFrame()
 
-    # Simple list of stop words
     stop_words = set([
         'the', 'a', 'an', 'is', 'it', 'and', 'but', 'or', 'to', 'of', 'in', 'for', 
         'with', 'on', 'this', 'that', 'i', 'was', 'my', 'had', 'have', 'very', 'not',
@@ -151,10 +149,8 @@ def get_top_words(df_subset, n=20):
     ])
 
     text = ' '.join(df_subset['review'].astype(str).str.lower().tolist())
-    # Find all words
     words = re.findall(r'\b\w+\b', text)
     
-    # Filter out stop words and single-letter words
     filtered_words = [word for word in words if word not in stop_words and len(word) > 1]
     
     word_counts = Counter(filtered_words)
@@ -164,20 +160,29 @@ def get_top_words(df_subset, n=20):
 
 
 # ----------------------------
-# Authentication and Initialization
+# Session State Initialization (No more global variables!)
 # ----------------------------
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
     st.session_state['current_role'] = 'Guest'
 
+# Initialize DataFrames into Session State
+if 'df_products' not in st.session_state or 'df_reviews' not in st.session_state:
+    st.session_state['df_products'], st.session_state['df_reviews'] = load_initial_data()
+
+# Data access shortcuts (used for readability in the rest of the code)
+df_products = st.session_state['df_products']
+df_reviews = st.session_state['df_reviews']
+
+
 if not (os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH)):
     st.error("🚨 Sentiment Model Not Found! Prediction functionality is disabled.")
     st.stop()
-
-# Load initial data (These variables are now global for the module)
-df_products, df_reviews = load_data()
-
+    
+# ----------------------------
+# Authentication
+# ----------------------------
 
 def login_screen():
     """Renders the login/role selection interface."""
@@ -234,6 +239,8 @@ else:
     st.sidebar.markdown("---")
     if st.sidebar.button("Hard Refresh Data"):
         st.cache_data.clear()
+        # Force reload data into session state
+        st.session_state['df_products'], st.session_state['df_reviews'] = load_initial_data()
         st.rerun()
 
 
@@ -260,17 +267,17 @@ else:
                     submitted = st.form_submit_button("Add Product")
                     
                     if submitted:
-                        # FIX 1: Moved global declaration to the very top of the submission block
-                        global df_products
-                        
-                        new_id = df_products['id'].max() + 1 if not df_products.empty else 1
+                        # Use session state variable directly
+                        current_df = st.session_state['df_products']
+                        new_id = current_df['id'].max() + 1 if not current_df.empty else 1
                         new_id = int(new_id) 
                         
                         new_row = pd.DataFrame([[new_id, name, price, region, image_url, description]],
-                                                columns=df_products.columns)
+                                                columns=current_df.columns)
                         
-                        df_products = pd.concat([df_products, new_row], ignore_index=True)
-                        save_products(df_products)
+                        # Update session state and save
+                        st.session_state['df_products'] = pd.concat([current_df, new_row], ignore_index=True)
+                        save_products()
                         st.success(f"Product '{name}' (ID: {new_id}) added successfully! **Refresh to see changes.**")
         
         with col_delete:
@@ -280,24 +287,24 @@ else:
                     delete_submitted = st.form_submit_button("Delete Product")
 
                     if delete_submitted:
-                        # FIX 2: Explicitly placed global declarations as the first lines
-                        global df_products
-                        global df_reviews
-                        
-                        if delete_id in df_products['id'].values:
-                            product_name = df_products[df_products['id'] == delete_id]['name'].iloc[0]
+                        df_products_state = st.session_state['df_products']
+                        df_reviews_state = st.session_state['df_reviews']
+
+                        if delete_id in df_products_state['id'].values:
+                            product_name = df_products_state[df_products_state['id'] == delete_id]['name'].iloc[0]
                             
                             # Modification of df_products
-                            df_products = df_products[df_products['id'] != delete_id]
-                            save_products(df_products)
+                            st.session_state['df_products'] = df_products_state[df_products_state['id'] != delete_id]
+                            save_products()
                             
                             # Modification of df_reviews
-                            reviews_deleted = len(df_reviews[df_reviews['product_id'] == delete_id])
-                            df_reviews = df_reviews[df_reviews['product_id'] != delete_id]
-                            save_reviews(df_reviews)
+                            reviews_deleted = len(df_reviews_state[df_reviews_state['product_id'] == delete_id])
+                            st.session_state['df_reviews'] = df_reviews_state[df_reviews_state['product_id'] != delete_id]
+                            save_reviews()
                             
                             st.success(f"Product '{product_name}' (ID: {int(delete_id)}) and its {reviews_deleted} reviews successfully deleted. **Hard refresh to update view.**")
                             st.cache_data.clear()
+                            st.rerun() # Rerun to refresh the view
                         else:
                             st.error(f"Product with ID {int(delete_id)} not found.")
 
@@ -308,10 +315,6 @@ else:
             uploaded_file = st.file_uploader("Upload File", type=["csv", "json"])
             
             if uploaded_file:
-                # FIX 3: Global declaration moved to the start of the `if uploaded_file` block 
-                # to prevent usage prior to declaration in complex flow.
-                global df_products
-                
                 try:
                     file_extension = uploaded_file.name.split('.')[-1]
                     
@@ -329,23 +332,25 @@ else:
                     if bulk_df.empty or not all(col in bulk_df.columns for col in required_cols):
                         st.error(f"Uploaded file is empty or missing required columns: {required_cols}")
                     else:
-                        # df_products['id'].max() is the first use, now safe above
-                        start_id = df_products['id'].max() + 1 if not df_products.empty else 1
+                        current_df = st.session_state['df_products']
+                        start_id = current_df['id'].max() + 1 if not current_df.empty else 1
                         bulk_df['id'] = range(int(start_id), int(start_id) + len(bulk_df))
                         
                         bulk_df['price'] = pd.to_numeric(bulk_df['price'], errors='coerce')
                         bulk_df.dropna(subset=['price'], inplace=True)
                         
-                        df_products = pd.concat([df_products, bulk_df[['id'] + required_cols]], ignore_index=True)
-                        save_products(df_products)
+                        # Update session state and save
+                        st.session_state['df_products'] = pd.concat([current_df, bulk_df[['id'] + required_cols]], ignore_index=True)
+                        save_products()
                         st.success(f"{len(bulk_df)} products added successfully from {file_extension.upper()} file! **Hard refresh to update view.**")
                         st.cache_data.clear()
                         
                 except Exception as e:
                     st.error(f"An error occurred during bulk upload: {e}")
 
+        # Use the session state DataFrame for display
         st.subheader("📦 Current Products Catalog")
-        st.dataframe(df_products, use_container_width=True)
+        st.dataframe(st.session_state['df_products'], use_container_width=True)
 
         # --- NEW FEATURE: Sentiment Override ---
         st.subheader("🛠 Sentiment Override / Correction")
@@ -387,26 +392,25 @@ else:
                     override_submitted = st.form_submit_button("Override Sentiment")
 
                     if override_submitted:
-                        # FIX: Added global declaration for modification
-                        global df_reviews
-                        df_reviews.loc[selected_review_index, 'sentiment'] = new_sentiment
-                        save_reviews(df_reviews)
+                        # Modify session state DataFrame directly
+                        st.session_state['df_reviews'].loc[selected_review_index, 'sentiment'] = new_sentiment
+                        save_reviews()
                         st.success(f"Review index {selected_review_index} sentiment updated to **{new_sentiment}**.")
                         st.cache_data.clear()
-
+                        st.rerun()
 
         # --- Maintenance Section ---
         st.subheader("🧹 Database Maintenance")
         if st.button("🔴 Clear ALL Reviews (DANGER ZONE)", help="This action is irreversible."):
             if st.session_state.get('confirm_clear_reviews', False):
-                # FIX: Added global declaration for modification
-                global df_reviews
-                df_reviews = pd.DataFrame(columns=['product_id', 'review', 'sentiment', 'timestamp'])
-                df_reviews['product_id'] = df_reviews['product_id'].astype('Int64')
-                save_reviews(df_reviews)
+                # Update session state DataFrame
+                st.session_state['df_reviews'] = pd.DataFrame(columns=['product_id', 'review', 'sentiment', 'timestamp'])
+                st.session_state['df_reviews']['product_id'] = st.session_state['df_reviews']['product_id'].astype('Int64')
+                save_reviews()
                 st.success("✅ All reviews have been successfully cleared. **Hard refresh to update view.**")
                 st.session_state['confirm_clear_reviews'] = False
                 st.cache_data.clear()
+                st.rerun()
             else:
                 st.warning("Are you sure? Click again to confirm clearing ALL reviews.")
                 st.session_state['confirm_clear_reviews'] = True
@@ -423,7 +427,8 @@ else:
         col_filter, col_sort, col_search = st.columns([1, 1, 2])
         
         with col_filter:
-            region_filter = st.selectbox("Filter by Region", ["All"] + sorted(df_products['region'].astype(str).unique().tolist()))
+            # Use session state data for options
+            region_filter = st.selectbox("Filter by Region", ["All"] + sorted(st.session_state['df_products']['region'].astype(str).unique().tolist()))
 
         with col_sort:
             sort_option = st.selectbox("Sort By", ["ID", "Price (Low to High)", "Price (High to Low)", "Region"])
@@ -433,7 +438,8 @@ else:
         
         
         # --- Data Filtering and Sorting ---
-        display_products = df_products if region_filter == "All" else df_products[df_products['region'].astype(str) == region_filter]
+        # All filtering is done on the session state DataFrame
+        display_products = st.session_state['df_products'] if region_filter == "All" else st.session_state['df_products'][st.session_state['df_products']['region'].astype(str) == region_filter]
         
         if search_query:
             search_query = search_query.lower()
@@ -462,7 +468,8 @@ else:
                 product_id = int(product['id'])
                 
                 with cols[j]:
-                    product_reviews = df_reviews[df_reviews['product_id'] == product_id]
+                    # Use session state data for review counting
+                    product_reviews = st.session_state['df_reviews'][st.session_state['df_reviews']['product_id'] == product_id]
                     
                     total_reviews = len(product_reviews)
                     if total_reviews > 0:
@@ -490,20 +497,19 @@ else:
                         submit_review = st.button("Submit Review & See Sentiment", key=f"submit_review_{product_id}")
                         
                         if submit_review and review_text.strip() != "":
-                            # FIX: Added global declaration for modification
-                            global df_reviews
-
                             sentiment = predict_sentiment(review_text)
                             
                             new_review = pd.DataFrame([[product_id, review_text, sentiment, datetime.now()]],
                                                         columns=['product_id', 'review', 'sentiment', 'timestamp'])
                             
-                            df_reviews = pd.concat([df_reviews, new_review], ignore_index=True)
-                            save_reviews(df_reviews)
+                            # Update session state and save
+                            st.session_state['df_reviews'] = pd.concat([st.session_state['df_reviews'], new_review], ignore_index=True)
+                            save_reviews()
                             
                             emoji = "🤩" if sentiment=="Positive" else "🧐" if sentiment=="Neutral" else "😞"
                             st.success(f"Review submitted! Predicted Sentiment: **{sentiment}** {emoji}")
-                            st.cache_data.clear() 
+                            st.cache_data.clear()
+                            st.rerun() # Rerun to update dashboard
 
         # ----------------------------
         # Dashboard Tabs
@@ -514,25 +520,23 @@ else:
         if df_reviews.empty:
             st.info("No reviews have been submitted yet to generate the dashboard.")
         else:
-            
-            # --- KPIs ---
-            total_reviews = len(df_reviews)
-            positive_reviews = len(df_reviews[df_reviews['sentiment'] == 'Positive'])
+            # Use session state DataFrames for metrics
+            total_reviews = len(st.session_state['df_reviews'])
+            positive_reviews = len(st.session_state['df_reviews'][st.session_state['df_reviews']['sentiment'] == 'Positive'])
             positive_rate = f"{ (positive_reviews / total_reviews) * 100 :.1f}%" if total_reviews > 0 else "0%"
 
             col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
             col_kpi1.metric("Total Reviews Analyzed", total_reviews)
             col_kpi2.metric("Overall Positive Rate", positive_rate)
-            col_kpi3.metric("Total Products in Catalog", len(df_products))
+            col_kpi3.metric("Total Products in Catalog", len(st.session_state['df_products']))
 
 
-            # NEW TAB ADDED: Word Analysis
             tabs = st.tabs(["Overall Sentiment Breakdown", "Product Performance", "Sentiment Over Time", "Regional Analysis", "Word Analysis", "Raw Reviews Table"])
 
             # Tab 1: Overall sentiment 
             with tabs[0]:
                 st.subheader("Overall Sentiment Distribution")
-                fig = px.pie(df_reviews, names='sentiment', title="Distribution of All Customer Feedback",
+                fig = px.pie(st.session_state['df_reviews'], names='sentiment', title="Distribution of All Customer Feedback",
                              color='sentiment', 
                              color_discrete_map={'Positive':'#34D399','Neutral':'#FACC15','Negative':'#F87171'})
                 st.plotly_chart(fig, use_container_width=True)
@@ -541,10 +545,10 @@ else:
             with tabs[1]:
                 st.subheader("Sentiment Count Per Product")
                 
-                sentiment_summary = df_reviews.groupby(['product_id','sentiment']).size().unstack(fill_value=0)
+                sentiment_summary = st.session_state['df_reviews'].groupby(['product_id','sentiment']).size().unstack(fill_value=0)
                 
                 sentiment_summary = sentiment_summary.join(
-                    df_products.set_index('id')['name'].rename('Product Name')
+                    st.session_state['df_products'].set_index('id')['name'].rename('Product Name')
                 ).fillna(0)
                 sentiment_summary = sentiment_summary.reset_index()
                 
@@ -563,8 +567,9 @@ else:
             with tabs[2]:
                 st.subheader("Sentiment Trend Over Time (Daily)")
                 
-                df_reviews['date'] = df_reviews['timestamp'].dt.date
-                time_series = df_reviews.groupby(['date', 'sentiment']).size().reset_index(name='count')
+                df_reviews_copy = st.session_state['df_reviews'].copy()
+                df_reviews_copy['date'] = df_reviews_copy['timestamp'].dt.date
+                time_series = df_reviews_copy.groupby(['date', 'sentiment']).size().reset_index(name='count')
                 
                 fig_time = px.line(time_series, x='date', y='count', color='sentiment',
                                    title="Daily Review Sentiment Count",
@@ -576,7 +581,7 @@ else:
             with tabs[3]:
                 st.subheader("Regional Sentiment Comparison")
                 
-                df_merged = df_reviews.merge(df_products[['id', 'region']], 
+                df_merged = st.session_state['df_reviews'].merge(st.session_state['df_products'][['id', 'region']], 
                                               left_on='product_id', 
                                               right_on='id', 
                                               how='left',
@@ -591,13 +596,13 @@ else:
                 fig_region.update_layout(xaxis_title="Region", yaxis_title="Number of Reviews")
                 st.plotly_chart(fig_region, use_container_width=True)
 
-            # Tab 5: NEW FEATURE: Word Analysis
+            # Tab 5: Word Analysis
             with tabs[4]:
                 st.subheader("Word Frequency Analysis (Top 20)")
                 col_pos_word, col_neg_word = st.columns(2)
                 
                 # Positive Word Cloud
-                positive_words = get_top_words(df_reviews[df_reviews['sentiment'] == 'Positive'])
+                positive_words = get_top_words(st.session_state['df_reviews'][st.session_state['df_reviews']['sentiment'] == 'Positive'])
                 with col_pos_word:
                     st.markdown("#### 👍 Top Positive Words")
                     if not positive_words.empty:
@@ -610,7 +615,7 @@ else:
                          st.info("No positive reviews yet.")
 
                 # Negative Word Cloud
-                negative_words = get_top_words(df_reviews[df_reviews['sentiment'] == 'Negative'])
+                negative_words = get_top_words(st.session_state['df_reviews'][st.session_state['df_reviews']['sentiment'] == 'Negative'])
                 with col_neg_word:
                     st.markdown("#### 👎 Top Negative Words")
                     if not negative_words.empty:
@@ -634,10 +639,10 @@ else:
                     key="review_table_filter"
                 )
 
-                filtered_reviews = df_reviews[df_reviews['sentiment'].isin(review_filter)].copy()
+                filtered_reviews = st.session_state['df_reviews'][st.session_state['df_reviews']['sentiment'].isin(review_filter)].copy()
                 
                 filtered_reviews = filtered_reviews.join(
-                    df_products.set_index('id')['name'].rename('Product Name'), 
+                    st.session_state['df_products'].set_index('id')['name'].rename('Product Name'), 
                     on='product_id'
                 )
                 
