@@ -1038,23 +1038,33 @@ else:
                     
                     category = product['category']
                     category_icon = CATEGORY_ICONS.get(category, CATEGORY_ICONS['Uncategorized'])
-                        
+                                            
                     st.markdown(f"""
                     <div class="product-card">
-                    <div class='card-content'>
-                        <h4 style="height: 40px; overflow: hidden; color: #4338ca;">{product['name']}</h4>
-                        <p style='font-size: 0.9em; color: #6366f1; font-weight: bold; margin-bottom: 10px;'>{category_icon} {category}</p>
-                        <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://placehold.co/150x150/d1d5db/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
-                        <p style='font-size: 1.2em; font-weight: 700; color: #1f2937;'>Price: ₹{product['price']:.2f}</p>
-                        
-                        <div style="margin: 15px 0;">
-                            <!-- FIX: Added unique key to resolve StreamlitDuplicateElementId error -->
-                           
+                        <div class='card-content'>
+                            <h4 style="height: 40px; overflow: hidden; color: #4338ca;">{product['name']}</h4>
+                            <p style='font-size: 0.9em; color: #6366f1; font-weight: bold; margin-bottom: 10px;'>{category_icon} {category}</p>
+                            <img src="{product['image_url']}" 
+                                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/d1d5db/000000?text=No+Image';" 
+                                 width="150" 
+                                 style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
+                            <p style='font-size: 1.2em; font-weight: 700; color: #1f2937;'>Price: ₹{product['price']:.2f}</p>
                         </div>
-                        <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
-                    </div>
                     </div>
                     """, unsafe_allow_html=True)
+
+                    st.plotly_chart(
+                        fig_gauge, 
+                        use_container_width=True, 
+                        config={'displayModeBar': False}, 
+                        key=f"gauge_{product_id}"
+                    )
+
+                    st.markdown(
+                        f"<p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>", 
+                        unsafe_allow_html=True
+                    )
+
                     
                     st.button("View Detail Analytics", 
                               key=f"detail_btn_{product_id}",
