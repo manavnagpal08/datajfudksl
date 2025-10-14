@@ -430,9 +430,10 @@ def predict_sentiment(text, vectorizer, clf):
 def highlight_review_keywords(review_text, product_id):
     """Highlights top positive/negative words in a review."""
     # Find the specific review row to get its sentiment
-    row = st.session_state['df_reviews'][st.session_state['df_reviews']['product_id'] == product_id].iloc[0]
+    # NOTE: This logic assumes the first matching review is sufficient for context, 
+    # but keyword generation is based on all reviews for the product.
     
-    # Get top 3 words for both sentiments across all reviews for this product
+    # Get top 5 words for both sentiments across all reviews for this product
     product_reviews = st.session_state['df_reviews'][st.session_state['df_reviews']['product_id'] == product_id]
     pos_words = [w.lower() for w in get_top_sentiment_words(product_reviews, 'Positive', n=5)]
     neg_words = [w.lower() for w in get_top_sentiment_words(product_reviews, 'Negative', n=5)]
@@ -441,6 +442,7 @@ def highlight_review_keywords(review_text, product_id):
     highlighted_review = []
 
     for word in words:
+        # Clean word for comparison (remove punctuation, lower case)
         clean_word = re.sub(r'\W+', '', word).lower()
         
         if clean_word in pos_words:
@@ -454,17 +456,25 @@ def highlight_review_keywords(review_text, product_id):
 
 
 # ----------------------------
-# Session State Initialization & Setup
+# Session State Initialization & Setup (FIXED: Ensure all keys exist explicitly)
 # ----------------------------
 
+# Initialize all required keys explicitly to prevent KeyErrors on first run/rerun
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
+if 'current_role' not in st.session_state:
     st.session_state['current_role'] = 'Guest'
+if 'show_detail_id' not in st.session_state:
     st.session_state['show_detail_id'] = None 
+if 'product_summary_cache' not in st.session_state:
     st.session_state['product_summary_cache'] = {} 
+if 'dark_mode' not in st.session_state:
     st.session_state['dark_mode'] = True # Start in Dark Mode
+if 'auto_refresh' not in st.session_state:
     st.session_state['auto_refresh'] = False
+if 'last_refresh_time' not in st.session_state:
     st.session_state['last_refresh_time'] = datetime.now()
+
 
 # Initialize DataFrames into Session State
 if 'df_products' not in st.session_state or 'df_reviews' not in st.session_state:
@@ -482,7 +492,9 @@ model_ready = st.session_state['vectorizer'] is not None and st.session_state['c
 if not model_ready:
     st.error("🚨 Sentiment Model Not Found! Prediction functionality is disabled.")
 
-# Apply theme CSS base
+# Apply theme CSS based on session state (Access is now safe)
+apply_theme_css(st.session_state['dark_mode'])
+
 # --- Auto Refresh Logic (Runs before content display) ---
 if st.session_state.get('auto_refresh', False):
     refresh_interval = 10 # Seconds
@@ -715,6 +727,10 @@ def show_product_detail(product_id):
         if review_row['manager_reply']:
             st.info(f"Brand Manager Reply: {review_row['manager_reply']}")
         elif is_manager:
+            # Initialize reply form state if not exists
+            if f'show_reply_form_{index}' not in st.session_state:
+                st.session_state[f'show_reply_form_{index}'] = False
+                
             if col_reply_btn.button("Add Reply", key=f"reply_btn_{index}"):
                 st.session_state[f'show_reply_form_{index}'] = not st.session_state.get(f'show_reply_form_{index}', False)
             
