@@ -1010,7 +1010,8 @@ else:
         for i in range(0, len(display_products), cols_per_row):
             cols = st.columns(cols_per_row)
             for j, (_, product) in enumerate(display_products.iloc[i:i+cols_per_row].iterrows()):
-                product_id = int(product['id'])
+                product_id = str(product['id']).strip()
+
                 
                 with cols[j]:
                     total_reviews = int(product['Review_Count'])
