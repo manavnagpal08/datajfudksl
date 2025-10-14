@@ -2,9 +2,11 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
-import json # ADDED: Required for JSON bulk upload
+import json 
 import plotly.express as px
 from datetime import datetime
+from collections import Counter # ADDED: Required for word analysis
+import re # ADDED: Required for word analysis
 
 # --- Configuration and Constants ---
 PRODUCTS_FILE = "data/products.csv"
@@ -105,7 +107,6 @@ def load_data():
         df_reviews['timestamp'] = pd.NaT
         
     df_reviews['timestamp'] = pd.to_datetime(df_reviews['timestamp'], errors='coerce')
-    # Fill missing timestamps with a default for consistent plotting
     df_reviews['timestamp'] = df_reviews['timestamp'].fillna(pd.to_datetime('2024-01-01 00:00:00'))
     
     if df_reviews.empty and (not os.path.exists(REVIEWS_FILE) or os.path.getsize(REVIEWS_FILE) == 0):
@@ -124,7 +125,6 @@ def save_reviews(df):
 def predict_sentiment(text):
     """Uses the loaded model to predict sentiment."""
     try:
-        # Load model and vectorizer only once
         if 'vectorizer' not in st.session_state:
             st.session_state['vectorizer'] = pickle.load(open(VECTORIZER_PATH, "rb"))
             st.session_state['clf'] = pickle.load(open(MODEL_PATH, "rb"))
@@ -137,21 +137,45 @@ def predict_sentiment(text):
         st.error(f"Error during prediction: {e}")
         return "Model Error"
 
+def get_top_words(df_subset, n=20):
+    """Calculates top N words from a DataFrame subset of reviews."""
+    if df_subset.empty:
+        return pd.DataFrame()
+
+    # Simple list of stop words
+    stop_words = set([
+        'the', 'a', 'an', 'is', 'it', 'and', 'but', 'or', 'to', 'of', 'in', 'for', 
+        'with', 'on', 'this', 'that', 'i', 'was', 'my', 'had', 'have', 'very', 'not',
+        'would', 'me', 'be', 'so', 'get', 'product', 'item', 'just', 'too', 'great', 
+        'good', 'bad', 'best', 'worst', 'really', 'much', 'like', 'for', 'about', 'is', 'i'
+    ])
+
+    text = ' '.join(df_subset['review'].astype(str).str.lower().tolist())
+    # Find all words
+    words = re.findall(r'\b\w+\b', text)
+    
+    # Filter out stop words and single-letter words
+    filtered_words = [word for word in words if word not in stop_words and len(word) > 1]
+    
+    word_counts = Counter(filtered_words)
+    top_n = word_counts.most_common(n)
+    
+    return pd.DataFrame(top_n, columns=['Word', 'Frequency'])
+
+
 # ----------------------------
 # Authentication and Initialization
 # ----------------------------
 
-# Initialize session state for login
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
     st.session_state['current_role'] = 'Guest'
 
-# Check model availability
 if not (os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH)):
     st.error("🚨 Sentiment Model Not Found! Prediction functionality is disabled.")
     st.stop()
 
-# Load initial data
+# Load initial data (These variables are now global for the module)
 df_products, df_reviews = load_data()
 
 
@@ -200,7 +224,7 @@ if not st.session_state['logged_in']:
     st.info("Please select a role to access the application. Admin credentials: `admin` / `password123`")
 else:
     # --- Sidebar Metrics and Logout ---
-    st.sidebar.markdown(f"### 👋 Welcome, {st.session_state['current_role']}!")
+    st.sidebar.markdown(f"### 👋 Welcome, **{st.session_state['current_role']}**!")
     if st.sidebar.button("Logout", key="logout_btn"):
         logout()
     
@@ -241,6 +265,7 @@ else:
                         
                         new_row = pd.DataFrame([[new_id, name, price, region, image_url, description]],
                                                 columns=df_products.columns)
+                        # FIX: Add global declaration before assignment
                         global df_products
                         df_products = pd.concat([df_products, new_row], ignore_index=True)
                         save_products(df_products)
@@ -256,10 +281,13 @@ else:
                         if delete_id in df_products['id'].values:
                             product_name = df_products[df_products['id'] == delete_id]['name'].iloc[0]
                             
-                            global df_reviews
+                            # FIX: Add global declaration before assignment
+                            global df_products
                             df_products = df_products[df_products['id'] != delete_id]
                             save_products(df_products)
                             
+                            # FIX: Add global declaration before assignment
+                            global df_reviews
                             reviews_deleted = len(df_reviews[df_reviews['product_id'] == delete_id])
                             df_reviews = df_reviews[df_reviews['product_id'] != delete_id]
                             save_reviews(df_reviews)
@@ -286,7 +314,7 @@ else:
                         bulk_df = pd.DataFrame(data)
                     else:
                         st.error("Unsupported file type.")
-                        bulk_df = pd.DataFrame() # Stop processing
+                        bulk_df = pd.DataFrame() 
 
                     required_cols = ['name', 'price', 'region', 'image_url', 'description']
                     
@@ -299,6 +327,7 @@ else:
                         bulk_df['price'] = pd.to_numeric(bulk_df['price'], errors='coerce')
                         bulk_df.dropna(subset=['price'], inplace=True)
                         
+                        # FIX: Add global declaration before assignment
                         global df_products
                         df_products = pd.concat([df_products, bulk_df[['id'] + required_cols]], ignore_index=True)
                         save_products(df_products)
@@ -311,10 +340,59 @@ else:
         st.subheader("📦 Current Products Catalog")
         st.dataframe(df_products, use_container_width=True)
 
+        # --- NEW FEATURE: Sentiment Override ---
+        st.subheader("🛠 Sentiment Override / Correction")
+        if df_reviews.empty:
+            st.warning("No reviews available to override.")
+        else:
+            reviews_with_product_name = df_reviews.merge(
+                df_products[['id', 'name']], 
+                left_on='product_id', 
+                right_on='id', 
+                suffixes=('', '_prod')
+            )
+            reviews_with_product_name['display_name'] = (
+                'ID ' + reviews_with_product_name.index.astype(str) + 
+                ' | ' + reviews_with_product_name['name_prod'] + 
+                ' | Current: ' + reviews_with_product_name['sentiment']
+            )
+
+            with st.form("sentiment_override_form"):
+                col_select, col_new_sent = st.columns([3, 1])
+                
+                selected_review_index = col_select.selectbox(
+                    "Select Review to Edit (by internal index and current sentiment)", 
+                    options=reviews_with_product_name.index.tolist(),
+                    format_func=lambda x: reviews_with_product_name.loc[x, 'display_name']
+                )
+
+                if selected_review_index in df_reviews.index:
+                    current_sentiment = df_reviews.loc[selected_review_index, 'sentiment']
+                    
+                    col_select.text_area("Review Content:", df_reviews.loc[selected_review_index, 'review'], height=100)
+                    
+                    new_sentiment = col_new_sent.radio(
+                        "New Sentiment:",
+                        options=['Positive', 'Neutral', 'Negative'],
+                        index=['Positive', 'Neutral', 'Negative'].index(current_sentiment)
+                    )
+
+                    override_submitted = st.form_submit_button("Override Sentiment")
+
+                    if override_submitted:
+                        # FIX: Add global declaration before assignment
+                        global df_reviews
+                        df_reviews.loc[selected_review_index, 'sentiment'] = new_sentiment
+                        save_reviews(df_reviews)
+                        st.success(f"Review index {selected_review_index} sentiment updated to **{new_sentiment}**.")
+                        st.cache_data.clear()
+
+
         # --- Maintenance Section ---
         st.subheader("🧹 Database Maintenance")
         if st.button("🔴 Clear ALL Reviews (DANGER ZONE)", help="This action is irreversible."):
             if st.session_state.get('confirm_clear_reviews', False):
+                # FIX: Add global declaration before assignment
                 global df_reviews
                 df_reviews = pd.DataFrame(columns=['product_id', 'review', 'sentiment', 'timestamp'])
                 df_reviews['product_id'] = df_reviews['product_id'].astype('Int64')
@@ -327,10 +405,10 @@ else:
                 st.session_state['confirm_clear_reviews'] = True
             
     # ----------------------------
-    # User Section & Dashboard (Access for both Admin and User)
+    # User Section & Dashboard 
     # ----------------------------
     
-    if st.session_state['current_role'] == "User" or st.session_state['current_role'] == "Admin":
+    if st.session_state['current_role'] in ["User", "Admin"]:
         
         st.header("🛍 Product Catalog")
 
@@ -410,13 +488,14 @@ else:
                             new_review = pd.DataFrame([[product_id, review_text, sentiment, datetime.now()]],
                                                         columns=['product_id', 'review', 'sentiment', 'timestamp'])
                             
+                            # FIX: Add global declaration before assignment
                             global df_reviews
                             df_reviews = pd.concat([df_reviews, new_review], ignore_index=True)
                             save_reviews(df_reviews)
                             
                             emoji = "🤩" if sentiment=="Positive" else "🧐" if sentiment=="Neutral" else "😞"
                             st.success(f"Review submitted! Predicted Sentiment: **{sentiment}** {emoji}")
-                            st.cache_data.clear() # Clear cache to force reload and update dashboard
+                            st.cache_data.clear() 
 
         # ----------------------------
         # Dashboard Tabs
@@ -439,7 +518,8 @@ else:
             col_kpi3.metric("Total Products in Catalog", len(df_products))
 
 
-            tabs = st.tabs(["Overall Sentiment Breakdown", "Product Performance", "Sentiment Over Time", "Regional Analysis", "Raw Reviews Table"])
+            # NEW TAB ADDED: Word Analysis
+            tabs = st.tabs(["Overall Sentiment Breakdown", "Product Performance", "Sentiment Over Time", "Regional Analysis", "Word Analysis", "Raw Reviews Table"])
 
             # Tab 1: Overall sentiment 
             with tabs[0]:
@@ -503,8 +583,40 @@ else:
                 fig_region.update_layout(xaxis_title="Region", yaxis_title="Number of Reviews")
                 st.plotly_chart(fig_region, use_container_width=True)
 
-            # Tab 5: Raw Reviews table
+            # Tab 5: NEW FEATURE: Word Analysis
             with tabs[4]:
+                st.subheader("Word Frequency Analysis (Top 20)")
+                col_pos_word, col_neg_word = st.columns(2)
+                
+                # Positive Word Cloud
+                positive_words = get_top_words(df_reviews[df_reviews['sentiment'] == 'Positive'])
+                with col_pos_word:
+                    st.markdown("#### 👍 Top Positive Words")
+                    if not positive_words.empty:
+                        fig_pos = px.bar(positive_words, x='Frequency', y='Word', orientation='h',
+                                         title='Most Frequent Words in Positive Reviews',
+                                         color_discrete_sequence=['#34D399'])
+                        fig_pos.update_layout(yaxis={'categoryorder':'total ascending'})
+                        st.plotly_chart(fig_pos, use_container_width=True)
+                    else:
+                         st.info("No positive reviews yet.")
+
+                # Negative Word Cloud
+                negative_words = get_top_words(df_reviews[df_reviews['sentiment'] == 'Negative'])
+                with col_neg_word:
+                    st.markdown("#### 👎 Top Negative Words")
+                    if not negative_words.empty:
+                        fig_neg = px.bar(negative_words, x='Frequency', y='Word', orientation='h',
+                                         title='Most Frequent Words in Negative Reviews',
+                                         color_discrete_sequence=['#F87171'])
+                        fig_neg.update_layout(yaxis={'categoryorder':'total ascending'})
+                        st.plotly_chart(fig_neg, use_container_width=True)
+                    else:
+                        st.info("No negative reviews yet.")
+
+
+            # Tab 6: Raw Reviews table
+            with tabs[5]:
                 st.subheader("🔍 All Customer Reviews")
                 
                 review_filter = st.multiselect(
