@@ -1036,7 +1036,13 @@ else:
                             ]}
                         ))
                     fig_gauge.update_layout(height=200, margin=dict(t=0, b=0, l=0, r=0))
-                    
+                    pos_percent_val = product.get('Pos_Percent', 0)
+                    neg_percent_val = product.get('Neg_Percent', 0)
+                    neu_percent_val = 100 - pos_percent_val - neg_percent_val
+
+                    pos_percent = f"{pos_percent_val:.0f}%"
+                    neu_percent = f"{neu_percent_val:.0f}%"
+                    neg_percent = f"{neg_percent_val:.0f}%"                    
                     category = product['category']
                     category_icon = CATEGORY_ICONS.get(category, CATEGORY_ICONS['Uncategorized'])
                                             
@@ -1050,6 +1056,11 @@ else:
                                  width="150" 
                                  style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
                             <p style='font-size: 1.2em; font-weight: 700; color: #1f2937;'>Price: ₹{product['price']:.2f}</p>
+                        </div>
+                        <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
+                            <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
+                            <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
+                            <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
