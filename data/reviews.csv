@@ -1,11 +1,16 @@
 product_id,review,sentiment,timestamp,upvotes,downvotes,reviewer_type,manager_reply
-P001,Mouse is very responsive and silent. Highly recommend.,Positive,2025-10-10 14:30:00,15,1,Verified Buyer,
-P001,It's just an average mouse. Nothing special about it.,Neutral,2025-10-08 09:15:00,2,5,Guest,
-P002,SSD speeds are fantastic for my large video files!,Positive,2025-10-11 11:00:00,10,0,Verified Buyer,
-P002,Failed after only two weeks of use. Totally unreliable!,Negative,2025-10-09 20:45:00,4,12,Verified Buyer,"We sincerely apologize for the inconvenience and have sent you a replacement immediately."
-P003,Great bottle, but the lid leaks if I don't screw it tightly.,Neutral,2025-10-05 16:20:00,8,3,Guest,
-P004,The coffee flavor is robust and smooth, excellent blend.,Positive,2025-10-12 07:30:00,20,0,Verified Buyer,
-P005,Best headphones I've ever owned. The ANC is superb.,Positive,2025-10-07 18:00:00,30,2,Verified Buyer,
-P005,They fit uncomfortably on my ears after about an hour.,Negative,2025-10-06 12:55:00,1,7,Guest,
-P006,The bamboo feels cheap and splintered quickly.,Negative,2025-10-04 15:40:00,0,9,Verified Buyer,
-P007,Good value for the price, but the roast is too dark.,Neutral,2025-10-03 10:10:00,3,1,Guest
+P004,"Average experience, nothing special.",Negative,2024-05-27 00:00:00,24,9,Guest,Thank you for your feedback!
+P005,Good quality but could be cheaper.,Neutral,2024-11-20 00:00:00,42,7,Guest,
+P001,Amazing design and comfort.,Negative,2024-04-12 00:00:00,32,9,Verified Buyer,Thank you for your feedback!
+P002,Customer service could be better.,Positive,2024-11-26 00:00:00,21,10,Guest,We’ll look into this issue.
+P001,Great battery life and build quality.,Neutral,2024-02-25 00:00:00,10,0,Guest,
+P004,Not satisfied with the sound quality.,Neutral,2024-04-19 00:00:00,7,1,Verified Buyer,Thank you for your feedback!
+P003,Amazing design and comfort.,Neutral,2024-07-23 00:00:00,6,6,Verified Buyer,Glad you liked it!
+P003,Customer service could be better.,Negative,2024-10-22 00:00:00,16,5,Verified Buyer,
+P004,Customer service could be better.,Positive,2024-12-20 00:00:00,46,0,Verified Buyer,We’ll look into this issue.
+P003,Customer service could be better.,Neutral,2024-05-29 00:00:00,0,8,Verified Buyer,
+P003,Excellent product! Works as expected.,Negative,2024-07-16 00:00:00,44,0,Verified Buyer,
+P001,Decent performance for the price.,Neutral,2024-04-09 00:00:00,41,1,Verified Buyer,Thank you for your feedback!
+P005,Customer service could be better.,Negative,2024-06-15 00:00:00,7,4,Guest,Thank you for your feedback!
+P005,Decent performance for the price.,Neutral,2024-12-20 00:00:00,9,4,Verified Buyer,Thank you for your feedback!
+P003,Decent performance for the price.,Negative,2024-09-23 00:00:00,42,6,Verified Buyer,Thank you for your feedback!

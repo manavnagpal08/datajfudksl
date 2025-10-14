@@ -1,4 +1,6 @@
-id,name,price,region,image_url,description
-1,Phone X,45000,India,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaEtVpu5NBZVyrgkDni7UlFx4HrjORx3zYyA&s,High performance phone
-2,Laptop Y,65000,USA,https://via.placeholder.com/150,Lightweight and fast
-3,Headphones Z,2000,India,https://via.placeholder.com/150,Noise-cancelling headphones
+id,name,price,region,image_url,description,category
+P001,Wireless Headphones,2499.99,North,https://example.com/images/headphones.jpg,High-quality wireless headphones with noise cancellation and 20-hour battery life.,Electronics
+P002,Smartwatch,4999.0,West,https://example.com/images/smartwatch.jpg,Feature-packed smartwatch with fitness tracking and water resistance.,Wearables
+P003,Bluetooth Speaker,1799.5,East,https://example.com/images/speaker.jpg,"Portable speaker with rich bass, Bluetooth 5.0, and 10-hour playback time.",Electronics
+P004,Eco-Friendly Water Bottle,699.0,South,https://example.com/images/bottle.jpg,"Reusable stainless steel bottle, keeps drinks hot or cold for hours.",Home & Kitchen
+P005,Yoga Mat,1299.75,Central,https://example.com/images/yogamat.jpg,"Non-slip, eco-friendly yoga mat ideal for all types of workouts.",Fitness
