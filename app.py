@@ -336,8 +336,24 @@ def load_initial_data():
     
     # Load products, ensuring 'category' column exists
     df_products = pd.read_csv(PRODUCTS_FILE) if os.path.exists(PRODUCTS_FILE) and os.path.getsize(PRODUCTS_FILE) > 0 else pd.DataFrame(columns=PRODUCTS_COLUMNS)
-    df_products['id'] = pd.to_numeric(df_products['id'], errors='coerce').fillna(0).astype('Int64')
     
+    # --- FIX: Ensure Product IDs are unique and non-zero to prevent gauge key collision ---
+    # 1. Convert to numeric, errors -> NaN (which becomes None in Int64)
+    df_products['id'] = pd.to_numeric(df_products['id'], errors='coerce').astype('Int64')
+    
+    # 2. Determine the maximum existing valid ID
+    valid_ids = df_products['id'].dropna()
+    # Start max_id at 0, or 1 if a product ID max is 0 (to avoid starting new IDs at 1, 2, 3...)
+    current_max_id = valid_ids.max() if not valid_ids.empty else 0
+    if current_max_id == 0 and not valid_ids.empty: current_max_id = 1
+    
+    # 3. Assign new unique IDs to rows where ID is missing, invalid (NaN/None), or 0.
+    for index, row in df_products.iterrows():
+        if pd.isna(row['id']) or row['id'] == 0:
+            current_max_id += 1
+            df_products.loc[index, 'id'] = current_max_id
+    # --- END FIX ---
+
     # Ensure all required product columns are present
     for col in PRODUCTS_COLUMNS:
         if col not in df_products.columns:
