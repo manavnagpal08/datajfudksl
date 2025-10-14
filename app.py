@@ -18,9 +18,20 @@ VECTORIZER_PATH = "model/vectorizer.pkl"
 PRODUCTS_COLUMNS = ['id', 'name', 'price', 'region', 'image_url', 'description', 'category'] # Added 'category'
 
 # Sentiment Emojis
-POSITIVE_EMOJI = "✅"
-NEGATIVE_EMOJI = "❌"
-NEUTRAL_EMOJI = "🟡" 
+POSITIVE_EMOJI = "✨"
+NEGATIVE_EMOJI = "⚠️"
+NEUTRAL_EMOJI = "⏸️" 
+
+# Category Emojis and map for visual flair
+CATEGORY_ICONS = {
+    "Electronics": "💻",
+    "Clothing & Footwear": "👚",
+    "Furniture": "🛋️",
+    "Cosmetics": "💄",
+    "Groceries": "🍎",
+    "Books": "📚",
+    "Uncategorized": "📦"
+}
 
 # Custom Credentials provided by user
 USERS = {
@@ -109,7 +120,7 @@ st.markdown("""
 <style>
     /* Global Styling */
     .stApp {
-        background-color: #f0f2f6; /* Light gray/blue background */
+        background-color: #f3f4f6; /* Light gray background */
         font-family: 'Inter', sans-serif;
     }
     h1, h2, h3, h4 {
@@ -117,7 +128,7 @@ st.markdown("""
         font-weight: 700;
     }
     h1 {
-        border-bottom: 3px solid #3b82f6; 
+        border-bottom: 3px solid #6366f1; /* Tailwind Indigo 500 */
         padding-bottom: 15px;
         margin-top: 0;
     }
@@ -133,7 +144,7 @@ st.markdown("""
         position: fixed;
         top: 0;
         left: 0;
-        background: linear-gradient(135deg, #e0e5ec 0%, #f0f2f6 100%);
+        background: linear-gradient(135deg, #eef2ff 0%, #f3f4f6 100%); /* Lighter, more airy gradient */
     }
     .login-box {
         max-width: 400px;
@@ -141,27 +152,28 @@ st.markdown("""
         padding: 50px 40px;
         border-radius: 16px;
         background-color: #ffffff;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.2); /* Deeper shadow */
-        border: 1px solid #dcdcdc;
+        box-shadow: 0 10px 30px rgba(99,102,241,0.15); /* Indigo-tinted shadow */
+        border: 1px solid #e5e7eb;
     }
     
-    /* Product Card Styling */
+    /* Product Card Styling with Animation */
     .product-card {
         border: none;
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 25px;
         min-height: 540px; 
-        box-shadow: 0 6px 15px rgba(0,0,0,0.08); /* Softer shadow */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06); /* Lighter shadow for modern feel */
         background-color: #ffffff;
         text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease-out; /* Smooth hover transition */
         display: flex;
         flex-direction: column;
     }
     .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        transform: translateY(-8px); /* Deeper lift on hover */
+        box-shadow: 0 20px 40px rgba(99,102,241,0.2); /* Highlighted shadow */
+        border: 1px solid #c7d2fe;
     }
     .card-content {
         flex-grow: 1;
@@ -172,37 +184,38 @@ st.markdown("""
         border-radius: 8px;
         border: none;
         color: white !important;
-        background-color: #3b82f6;
+        background-color: #6366f1; /* Tailwind Indigo 500 */
         padding: 10px 20px;
         font-weight: 600;
         transition: background-color 0.2s, transform 0.2s;
     }
     .stButton>button:hover {
-        background-color: #2563eb;
+        background-color: #4f46e5; /* Tailwind Indigo 600 */
         transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     /* Sentiment Colors */
-    .pos-text { color: #10B981; font-weight: bold; }
-    .neg-text { color: #EF4444; font-weight: bold; }
-    .neu-text { color: #FBBF24; font-weight: bold; }
+    .pos-text { color: #10B981; font-weight: bold; } /* Emerald */
+    .neg-text { color: #F87171; font-weight: bold; } /* Red */
+    .neu-text { color: #FBBF24; font-weight: bold; } /* Amber */
 
     /* Custom Metrics Boxes (Enhanced Visuals) */
     .metric-box {
         background-color: #ffffff;
         border-radius: 10px;
         padding: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         text-align: center;
         margin-bottom: 15px;
-        transition: all 0.2s ease-in-out;
+        transition: all 0.3s ease-in-out;
     }
     .metric-box:hover {
-        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .pos-metric { border-left: 5px solid #10B981; }
-    .neg-metric { border-left: 5px solid #EF4444; }
-    .total-metric { border-left: 5px solid #3b82f6; }
+    .neg-metric { border-left: 5px solid #F87171; }
+    .total-metric { border-left: 5px solid #6366f1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -210,6 +223,21 @@ st.markdown("""
 # ----------------------------
 # Data Loading and Utility Functions
 # ----------------------------
+
+def generate_sample_products(current_max_id):
+    """Generates sample product data with defined categories if the file is empty."""
+    next_id = current_max_id + 1
+    
+    sample_data = [
+        {'id': next_id, 'name': 'Ultra-HD Monitor', 'price': 34999.00, 'region': 'North', 'image_url': 'https://placehold.co/150x150/6366f1/ffffff?text=Monitor', 'description': '4K monitor with high refresh rate.', 'category': 'Electronics'},
+        {'id': next_id + 1, 'name': 'Organic Cotton T-Shirt', 'price': 1299.00, 'region': 'South', 'image_url': 'https://placehold.co/150x150/10b981/ffffff?text=T-Shirt', 'description': 'Sustainable and comfortable wear.', 'category': 'Clothing & Footwear'},
+        {'id': next_id + 2, 'name': 'Luxury Leather Sofa', 'price': 129000.00, 'region': 'West', 'image_url': 'https://placehold.co/150x150/f97316/ffffff?text=Sofa', 'description': 'Three-seater genuine leather.', 'category': 'Furniture'},
+        {'id': next_id + 3, 'name': 'Moisturizing Cream Set', 'price': 4500.00, 'region': 'East', 'image_url': 'https://placehold.co/150x150/ec4899/ffffff?text=Cream', 'description': 'Day and night moisturizing routine.', 'category': 'Cosmetics'},
+        {'id': next_id + 4, 'name': 'Assorted Fresh Fruit Box', 'price': 999.00, 'region': 'North', 'image_url': 'https://placehold.co/150x150/fbbf24/ffffff?text=Fruit', 'description': 'Weekly box of seasonal fruits.', 'category': 'Groceries'},
+        {'id': next_id + 5, 'name': 'The Great Classic Novel', 'price': 750.00, 'region': 'South', 'image_url': 'https://placehold.co/150x150/a855f7/ffffff?text=Book', 'description': 'A must-read for all students.', 'category': 'Books'},
+    ]
+    return pd.DataFrame(sample_data)
+
 
 @st.cache_data(show_spinner="Loading Data...")
 def load_initial_data():
@@ -223,10 +251,16 @@ def load_initial_data():
     # Ensure all required product columns are present
     for col in PRODUCTS_COLUMNS:
         if col not in df_products.columns:
-            # Explicitly add missing column with default value
             default_value = 'Uncategorized' if col == 'category' else None
             df_products.loc[:, col] = default_value
     
+    # Generate sample data if the product file is truly empty
+    if df_products.empty or len(df_products) == 0:
+        df_products = generate_sample_products(0)
+    else:
+        # Check if any ID exists. If so, ensure all are Int64
+        df_products['id'] = pd.to_numeric(df_products['id'], errors='coerce').fillna(0).astype('Int64')
+
     # Ensure 'category' is a string and fill any remaining NaNs
     df_products['category'] = df_products['category'].fillna('Uncategorized').astype(str)
     
@@ -238,7 +272,8 @@ def load_initial_data():
             loaded_df = pd.read_csv(REVIEWS_FILE)
             if not loaded_df.empty and all(col in loaded_df.columns for col in REVIEW_COLUMNS[:3]):
                 df_reviews = loaded_df
-        except:
+        except Exception:
+            # Handle potential loading errors by keeping the empty reviews df
             pass
             
     df_reviews['product_id'] = pd.to_numeric(df_reviews['product_id'], errors='coerce').fillna(0).astype('Int64')
@@ -331,7 +366,7 @@ def main_login_screen():
 
     with st.form("login_form"):
         # Enhanced title and header
-        st.markdown("<h2 style='text-align: center; color: #3b82f6;'>📈 E-Commerce Analytics Hub</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #6366f1;'>📈 E-Commerce Analytics Hub</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #4b5563; margin-bottom: 25px;'>Securely access your data insights.</p>", unsafe_allow_html=True)
         st.markdown("---")
         
@@ -378,7 +413,8 @@ def show_product_detail(product_id):
         
     product = df_products[df_products['id'] == product_id].iloc[0]
     
-    st.header(f"Product Detail Analysis: {product['name']} (ID: {product_id})")
+    icon = CATEGORY_ICONS.get(product['category'], '📦')
+    st.header(f"Product Detail Analysis: {icon} {product['name']} (ID: {product_id})")
     st.button("← Back to Catalog", on_click=lambda: st.session_state.update({'show_detail_id': None}))
     
     product_reviews = df_reviews[df_reviews['product_id'] == product_id]
@@ -449,7 +485,7 @@ def show_product_detail(product_id):
         
         fig_time = px.line(time_series, x='date', y='count', color='sentiment',
                            title=f"Daily Sentiment Trend",
-                           color_discrete_map={'Positive':'#10B981','Neutral':'#FBBF24','Negative':'#EF4444'})
+                           color_discrete_map={'Positive':'#10B981','Neutral':'#FBBF24','Negative':'#F87171'})
         st.plotly_chart(fig_time, use_container_width=True)
     
     with col_key:
@@ -459,7 +495,6 @@ def show_product_detail(product_id):
 
     with col_length:
         st.markdown("#### Review Length Distribution")
-        # Ensure 'review_length' is calculated only once if possible, but recalculate here for safety if not in session state
         product_reviews['review_length'] = product_reviews['review'].str.len()
         
         fig_len = px.histogram(product_reviews, x='review_length', nbins=10, 
@@ -505,7 +540,6 @@ else:
                 if not st.session_state['df_products'].empty:
                     with st.form("category_update_form"):
                         
-                        # Get products for selection
                         product_options = st.session_state['df_products']['id'].tolist()
                         
                         prod_id_to_edit = st.selectbox(
@@ -518,7 +552,6 @@ else:
                         current_category = st.session_state['df_products'][st.session_state['df_products']['id']==prod_id_to_edit]['category'].iloc[0] if prod_id_to_edit is not None else "Uncategorized"
                         
                         # Get all existing unique categories
-                        # Use a defensive check here as well
                         if 'category' in st.session_state['df_products'].columns:
                             all_categories = st.session_state['df_products']['category'].unique().tolist()
                         else:
@@ -528,18 +561,19 @@ else:
                         
                         st.markdown(f"**Current Category:** `{current_category}`")
 
-                        # Allow user to select existing category
+                        # Use the CATEGORY_ICONS keys for clean, consistent options
+                        standard_categories = list(CATEGORY_ICONS.keys())
+                        
                         selected_existing = st.selectbox(
-                            "Select an Existing Category", 
-                            ["(Leave unchanged)"] + sorted(all_categories),
+                            "Select an Existing or Standard Category", 
+                            ["(Leave unchanged)"] + sorted(list(set(all_categories + standard_categories))),
                             key="select_existing_category"
                         )
                         
-                        # Allow user to type a new category
                         typed_new_category = st.text_input(
                             "OR Type a New Category Name", 
                             value="",
-                            placeholder="e.g., Electronics, Apparel, Home Goods",
+                            placeholder="e.g., Seasonal Decor, Sports Gear",
                             key="typed_new_category"
                         )
 
@@ -567,32 +601,40 @@ else:
                     st.info("No products available to categorize.")
 
         st.header("🛍 Product Catalog")
+        st.markdown("---")
+
 
         # Interactive Filter and Search - Now 5 columns
-        col_filter_region, col_filter_category, col_sort, col_sentiment, col_search = st.columns([1, 1, 1, 1, 2])
+        col_filter_region, col_filter_category, col_sort, col_sentiment, col_search = st.columns([1, 2, 1, 1, 2])
         
         with col_filter_region:
-            region_filter = st.selectbox("Filter by Region", ["All"] + sorted(st.session_state['df_products']['region'].astype(str).unique().tolist()))
+            region_filter = st.selectbox("🌎 Filter by Region", ["All"] + sorted(st.session_state['df_products']['region'].astype(str).unique().tolist()))
 
         with col_filter_category:
-            # --- FIX APPLIED HERE: Defensive check for 'category' column ---
             if 'category' in st.session_state['df_products'].columns:
                 unique_categories = st.session_state['df_products']['category'].astype(str).unique().tolist()
             else:
-                # Fallback if the column is missing to prevent KeyError
                 unique_categories = ['Uncategorized']
                 
-            category_filter = st.selectbox("Filter by Category", ["All"] + sorted(unique_categories))
-            # --- END FIX ---
+            # Use format_func to add the emoji flair to the category filter
+            def format_category_with_icon(cat):
+                icon = CATEGORY_ICONS.get(cat, CATEGORY_ICONS['Uncategorized'])
+                return f"{icon} {cat}"
+
+            category_filter = st.selectbox(
+                "🎯 Filter by Category", 
+                ["All"] + sorted(unique_categories), 
+                format_func=lambda x: format_category_with_icon(x) if x != "All" else "All Categories"
+            )
 
         with col_sort:
-            sort_option = st.selectbox("Sort By", ["ID", "Price (L-H)", "Price (H-L)"])
+            sort_option = st.selectbox("↕️ Sort By", ["ID", "Price (L-H)", "Price (H-L)"])
         
         with col_sentiment:
             min_pos_percent = st.slider("Min Pos. %", 0, 100, 0, step=5)
         
         with col_search:
-            search_query = st.text_input("Search Product (Name/Desc)", "")
+            search_query = st.text_input("🔍 Search Product (Name/Desc)", "")
         
         
         # --- Data Preparation for Filtering ---
@@ -618,11 +660,8 @@ else:
         if region_filter != "All":
             display_products = display_products[display_products['region'].astype(str) == region_filter]
         
-        # Check for category column existence before applying category filter
         if 'category' in display_products.columns and category_filter != "All":
             display_products = display_products[display_products['category'].astype(str) == category_filter]
-        elif 'category' not in display_products.columns:
-            st.warning("Category column missing for filtering. Please refresh data if this persists.")
 
 
         if search_query:
@@ -640,6 +679,7 @@ else:
             display_products = display_products.sort_values(by='id')
 
         # --- Product Display (Using Columns) ---
+        st.markdown("<hr style='border: 1px solid #e5e7eb;'>", unsafe_allow_html=True)
         if display_products.empty:
             st.warning("No products match your current criteria.")
         
@@ -659,16 +699,19 @@ else:
                     pos_percent = f"{pos_percent_val:.0f}%"
                     neu_percent = f"{neu_percent_val:.0f}%"
                     neg_percent = f"{neg_percent_val:.0f}%"
+                    
+                    category = product['category'] if 'category' in product else 'Uncategorized'
+                    category_icon = CATEGORY_ICONS.get(category, CATEGORY_ICONS['Uncategorized'])
                         
                     # Custom HTML for Card (Integrating Emojis and better layout)
                     st.markdown(f"""
                     <div class="product-card">
                     <div class='card-content'>
-                        <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
-                        <p style='font-size: 0.9em; color: #3b82f6; font-weight: bold; margin-bottom: 10px;'>{product['category'] if 'category' in product else 'Uncategorized'}</p>
-                        <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
+                        <h4 style="height: 40px; overflow: hidden; color: #4f46e5;">{product['name']}</h4>
+                        <p style='font-size: 0.9em; color: #6366f1; font-weight: bold; margin-bottom: 10px;'>{category_icon} {category}</p>
+                        <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://placehold.co/150x150/d1d5db/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
                         <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
-                        <p><b>Price: ₹{product['price']:.2f}</b></p>
+                        <p style='font-size: 1.1em;'><b>Price: ₹{product['price']:.2f}</b></p>
                         
                         <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
                             <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
@@ -728,7 +771,7 @@ else:
             tabs = st.tabs([
                 "Overall Breakdown & Regional View", 
                 "Product Performance", 
-                "Top/Worst Performers (Filtered by Category)", # Tab 2 updated
+                "Top/Worst Performers (Filtered by Category)", 
                 "Price Quartile Analysis", 
                 "Extreme Reviews",
                 "Raw Reviews Table"
@@ -805,7 +848,7 @@ else:
                     "Filter Performance by Category", 
                     ["All"] + sorted(all_categories), 
                     key="perf_cat_filter",
-                    help="Analyze top/worst performers within a specific product segment."
+                    format_func=lambda x: format_category_with_icon(x) if x != "All" else "All Categories"
                 )
 
                 # Use a merged dataframe that contains Pos_Percent, filtered by the Dashboard's general view requirements
