@@ -355,7 +355,7 @@ def load_initial_data():
     
     # --- FIX: Ensure Product IDs are unique and non-zero to prevent gauge key collision ---
     # 1. Convert to numeric, errors -> NaN (which becomes None in Int64)
-    df_products['id'] = pd.to_numeric(df_products['id'], errors='coerce').astype('Int64')
+    df_products['id'] = df_products['id'].astype(str).str.strip()
     
     # 2. Determine the maximum existing valid ID
     valid_ids = df_products['id'].dropna()
@@ -401,7 +401,7 @@ def load_initial_data():
         except Exception as e:
             st.warning(f"Error loading reviews: {e}. Starting with sample reviews.")
             
-    df_reviews['product_id'] = pd.to_numeric(df_reviews['product_id'], errors='coerce').fillna(0).astype('Int64')
+    df_reviews['product_id'] = df_reviews['product_id'].astype(str).str.strip()
     df_reviews['timestamp'] = pd.to_datetime(df_reviews['timestamp'], errors='coerce').fillna(pd.to_datetime('2024-01-01 00:00:00'))
     df_reviews['upvotes'] = df_reviews['upvotes'].astype(int)
     df_reviews['downvotes'] = df_reviews['downvotes'].astype(int)
