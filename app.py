@@ -706,20 +706,17 @@ else:
                     # Custom HTML for Card (Integrating Emojis and better layout)
                     st.markdown(f"""
                     <div class="product-card">
-                    <div class='card-content'>
-                        <h4 style="height: 40px; overflow: hidden; color: #4f46e5;">{product['name']}</h4>
-                        <p style='font-size: 0.9em; color: #6366f1; font-weight: bold; margin-bottom: 10px;'>{category_icon} {category}</p>
-                        <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://placehold.co/150x150/d1d5db/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
-                        <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
-                        <p style='font-size: 1.1em;'><b>Price: ₹{product['price']:.2f}</b></p>
-                        
-                        <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
-                            <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
-                            <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
-                            <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
-                        </div>
-                        <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
+                    <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
+                    <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
+                    <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
+                    <p><b>Price: ₹{product['price']:.2f}</b></p>
+                    
+                    <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
+                        <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
+                        <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
+                        <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
                     </div>
+                    <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     <div style='height: 10px;'></div> 
                     </div>
                     """, unsafe_allow_html=True)
