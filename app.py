@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 from collections import Counter
 import re
 import time
-from math import ceil
 import random
 import numpy as np
 from io import StringIO
@@ -114,8 +113,6 @@ def generate_product_summary_internal(product_name, reviews_df):
     if pos_rate >= 0.8:
         overall_sentiment = "Outstanding"
         sentiment_description = "The customer reception is overwhelmingly positive, marking this as a top-tier product."
-    # ... rest of the logic remains the same ...
-
     elif pos_rate >= 0.6:
         overall_sentiment = "Strong"
         sentiment_description = "The feedback is mostly positive, suggesting high customer satisfaction with minor caveats."
@@ -152,35 +149,22 @@ def generate_product_summary_internal(product_name, reviews_df):
     return final_summary
 
 
-# --- Aesthetics (Custom CSS for Light/Dark Mode) ---
-def apply_theme_css(is_dark_mode):
-    """Applies custom CSS based on the dark mode state."""
+# --- Aesthetics (Custom CSS for Light Mode ONLY) ---
+def apply_theme_css():
+    """Applies custom CSS hardcoded for Light Mode."""
     
-    # Define color variables for easy switching
-    if is_dark_mode:
-        bg_color = "#1f2937"
-        text_color = "#f3f4f6"
-        card_bg = "#374151"
-        card_shadow = "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.1)"
-        login_bg = "radial-gradient(circle at 10% 20%, rgba(55, 65, 81, 0.4) 0%, #1f2937 100%)"
-        accent_color = "#6366f1"
-        hr_color = "#4b5563"
-        score_bar_bg = "#4b5563"
-        pos_color = "#4ade80" # Green 400
-        neg_color = "#f87171" # Red 400
-        neu_color = "#fcd34d" # Amber 300
-    else:
-        bg_color = "#f9fafb"
-        text_color = "#1f2937"
-        card_bg = "#ffffff"
-        card_shadow = "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)"
-        login_bg = "radial-gradient(circle at 10% 20%, rgba(203, 213, 225, 0.4) 0%, #f9fafb 100%)"
-        accent_color = "#4338ca"
-        hr_color = "#e5e7eb"
-        score_bar_bg = "#f3f4f6"
-        pos_color = "#059669" # Emerald 600
-        neg_color = "#dc2626" # Red 600
-        neu_color = "#f59e0b" # Amber 500
+    # Define LIGHT MODE color variables
+    bg_color = "#f9fafb"
+    text_color = "#1f2937"
+    card_bg = "#ffffff"
+    card_shadow = "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)"
+    login_bg = "radial-gradient(circle at 10% 20%, rgba(203, 213, 225, 0.4) 0%, #f9fafb 100%)"
+    accent_color = "#4338ca"
+    hr_color = "#e5e7eb"
+    score_bar_bg = "#f3f4f6"
+    pos_color = "#059669" # Emerald 600
+    neg_color = "#dc2626" # Red 600
+    neu_color = "#f59e0b" # Amber 500
 
 
     st.markdown(f"""
@@ -429,9 +413,6 @@ def predict_sentiment(text, vectorizer, clf):
 
 def highlight_review_keywords(review_text, product_id):
     """Highlights top positive/negative words in a review."""
-    # Find the specific review row to get its sentiment
-    # NOTE: This logic assumes the first matching review is sufficient for context, 
-    # but keyword generation is based on all reviews for the product.
     
     # Get top 5 words for both sentiments across all reviews for this product
     product_reviews = st.session_state['df_reviews'][st.session_state['df_reviews']['product_id'] == product_id]
@@ -456,7 +437,7 @@ def highlight_review_keywords(review_text, product_id):
 
 
 # ----------------------------
-# Session State Initialization & Setup (FIXED: Ensure all keys exist explicitly)
+# Session State Initialization & Setup
 # ----------------------------
 
 # Initialize all required keys explicitly to prevent KeyErrors on first run/rerun
@@ -468,8 +449,6 @@ if 'show_detail_id' not in st.session_state:
     st.session_state['show_detail_id'] = None 
 if 'product_summary_cache' not in st.session_state:
     st.session_state['product_summary_cache'] = {} 
-if 'dark_mode' not in st.session_state:
-    st.session_state['dark_mode'] = True # Start in Dark Mode
 if 'auto_refresh' not in st.session_state:
     st.session_state['auto_refresh'] = False
 if 'last_refresh_time' not in st.session_state:
@@ -492,8 +471,8 @@ model_ready = st.session_state['vectorizer'] is not None and st.session_state['c
 if not model_ready:
     st.error("🚨 Sentiment Model Not Found! Prediction functionality is disabled.")
 
-# Apply theme CSS based on session state (Access is now safe)
-apply_theme_css(st.session_state['dark_mode'])
+# Apply theme CSS (now hardcoded for Light Mode)
+apply_theme_css()
 
 # --- Auto Refresh Logic (Runs before content display) ---
 if st.session_state.get('auto_refresh', False):
@@ -754,11 +733,12 @@ if not st.session_state['logged_in']:
 else:
     # --- Sidebar Controls ---
     st.sidebar.markdown(f"### 👋 Welcome, **{st.session_state['current_role']}**!")
-    st.session_state['dark_mode'] = st.sidebar.toggle("🌙 Dark Mode", value=st.session_state['dark_mode'], key="dark_mode_toggle")
+    
+    # NOTE: Dark Mode Toggle removed here to enforce Light Mode via CSS
     
     st.sidebar.markdown("---")
     
-    st.session_state['auto_refresh'] = st.sidebar.toggle("🔄 Auto-Refresh Every 10s", value=st.session_state['auto_refresh'], key="auto_refresh_toggle")
+    st.session_state['auto_refresh'] = st.sidebar.toggle("🔄 Auto-Refresh Every 10s", value=st.session_state.get('auto_refresh', False), key="auto_refresh_toggle")
     
     if st.sidebar.button("Logout", key="logout_btn"):
         logout()
@@ -1027,7 +1007,8 @@ else:
                         <p style='font-size: 1.2em; font-weight: 700; color: #1f2937;'>Price: ₹{product['price']:.2f}</p>
                         
                         <div style="margin: 15px 0;">
-                            {st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False})}
+                            <!-- FIX: Added unique key to resolve StreamlitDuplicateElementId error -->
+                            {st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False}, key=f"gauge_{product_id}")}
                         </div>
                         <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     </div>
