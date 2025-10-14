@@ -4,6 +4,9 @@ import pickle
 import os
 import plotly.express as px
 
+# ----------------------------
+# Page Configuration
+# ----------------------------
 st.set_page_config(page_title="E-Commerce Sentiment App", layout="wide")
 st.title("🛒 E-Commerce Platform with Sentiment Analysis")
 
@@ -22,7 +25,7 @@ def predict_sentiment(text):
     return clf.predict(X)[0]
 
 # ----------------------------
-# Files and Data Setup
+# Data Setup
 # ----------------------------
 os.makedirs("data", exist_ok=True)
 
@@ -38,7 +41,6 @@ else:
 reviews_file = "data/reviews.csv"
 if os.path.exists(reviews_file):
     df_reviews = pd.read_csv(reviews_file)
-    # Ensure correct columns
     for col in ['product_id', 'review', 'sentiment']:
         if col not in df_reviews.columns:
             df_reviews[col] = ''
@@ -47,7 +49,7 @@ else:
     df_reviews.to_csv(reviews_file, index=False)
 
 # ----------------------------
-# Select Role
+# Role Selection
 # ----------------------------
 role = st.radio("Select Role", ["Admin", "User"])
 
@@ -82,36 +84,54 @@ else:
     region_filter = st.selectbox("Filter by Region", ["All"] + sorted(df_products['region'].unique()))
     display_products = df_products if region_filter == "All" else df_products[df_products['region'] == region_filter]
 
-    for _, product in display_products.iterrows():
-        st.subheader(product['name'])
-        st.image(product['image_url'], width=150)
-        st.write(product['description'])
-        st.write(f"Price: ₹{product['price']}")
+    # Display products in columns
+    cols_per_row = 3
+    for i in range(0, len(display_products), cols_per_row):
+        cols = st.columns(cols_per_row)
+        for j, (_, product) in enumerate(display_products.iloc[i:i+cols_per_row].iterrows()):
+            with cols[j]:
+                st.markdown(f"""
+                <div style="
+                    border:1px solid #ccc;
+                    border-radius:10px;
+                    padding:10px;
+                    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+                    background-color:#f9f9f9;
+                    ">
+                <h4>{product['name']}</h4>
+                <img src="{product['image_url']}" width="150">
+                <p>{product['description']}</p>
+                <p><b>Price: ₹{product['price']}</b></p>
+                </div>
+                """, unsafe_allow_html=True)
 
-        # Review submission form
-        with st.form(f"review_form_{product['id']}"):
-            review_text = st.text_area("Write a review:", key=f"review_{product['id']}")
-            submit_review = st.form_submit_button("Submit Review")
-            if submit_review and review_text.strip() != "":
-                sentiment = predict_sentiment(review_text)
-                new_review = pd.DataFrame([[product['id'], review_text, sentiment]],
-                                          columns=['product_id', 'review', 'sentiment'])
-                df_reviews = pd.concat([df_reviews, new_review], ignore_index=True)
-                df_reviews.to_csv(reviews_file, index=False)
-                st.success(f"Review submitted! Predicted Sentiment: {sentiment}")
+                # Expander for review submission
+                with st.expander("Write a Review"):
+                    review_text = st.text_area("Your review here:", key=f"review_{product['id']}")
+                    submit_review = st.button("Submit Review", key=f"submit_{product['id']}")
+                    if submit_review and review_text.strip() != "":
+                        sentiment = predict_sentiment(review_text)
+                        new_review = pd.DataFrame([[product['id'], review_text, sentiment]],
+                                                  columns=['product_id', 'review', 'sentiment'])
+                        df_reviews = pd.concat([df_reviews, new_review], ignore_index=True)
+                        df_reviews.to_csv(reviews_file, index=False)
+                        st.success(f"Review submitted! Predicted Sentiment: {sentiment}")
 
     # ----------------------------
     # Sentiment Dashboard
     # ----------------------------
     if not df_reviews.empty:
         st.header("📈 Sentiment Analysis Dashboard")
-        fig = px.histogram(df_reviews, x='sentiment', color='sentiment',
-                           title="Overall Sentiment Distribution")
+
+        # Overall sentiment pie chart
+        fig = px.pie(df_reviews, names='sentiment', title="Overall Sentiment Distribution",
+                     color='sentiment', color_discrete_map={'Positive':'green','Neutral':'gray','Negative':'red'})
         st.plotly_chart(fig)
 
+        # Reviews by Product
         st.subheader("Reviews by Product")
         for _, product in display_products.iterrows():
             product_reviews = df_reviews[df_reviews['product_id'] == product['id']]
             if not product_reviews.empty:
-                st.write(f"**{product['name']}** Reviews:")
+                st.markdown(f"**{product['name']}** Reviews:")
                 st.dataframe(product_reviews[['review', 'sentiment']])
