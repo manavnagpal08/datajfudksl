@@ -19,23 +19,48 @@ def load_data():
     """Loads and initializes products and reviews DataFrames."""
     os.makedirs("data", exist_ok=True)
 
-    # Initialize products CSV
+    # ------------------ Products Initialization ------------------
     if os.path.exists(PRODUCTS_FILE):
         df_products = pd.read_csv(PRODUCTS_FILE)
     else:
         # Define specific dtypes to prevent Streamlit type inference warnings
         df_products = pd.DataFrame(columns=['id', 'name', 'price', 'region', 'image_url', 'description'])
-        df_products['id'] = df_products['id'].astype(float)
+        df_products['id'] = df_products['id'].astype('Int64') # Use Int64 for integer ID
         df_products.to_csv(PRODUCTS_FILE, index=False)
+    
+    # Ensure product ID for df_products is Int64 for consistency
+    df_products['id'] = pd.to_numeric(df_products['id'], errors='coerce').fillna(0).astype('Int64')
+    
+    # ------------------ Reviews Initialization (Robust against KeyError) ------------------
+    REVIEW_COLUMNS = ['product_id', 'review', 'sentiment']
+    
+    # 1. Start with a correctly structured empty DataFrame
+    df_reviews = pd.DataFrame(columns=REVIEW_COLUMNS)
+    
+    if os.path.exists(REVIEWS_FILE) and os.path.getsize(REVIEWS_FILE) > 0:
+        try:
+            # 2. Try reading the existing file
+            loaded_df = pd.read_csv(REVIEWS_FILE)
+            
+            # 3. Use loaded data only if it has the required columns to prevent KeyError
+            if not loaded_df.empty and all(col in loaded_df.columns for col in REVIEW_COLUMNS):
+                df_reviews = loaded_df
+            
+        except pd.errors.EmptyDataError:
+            # File exists but is truly empty, df_reviews remains the structured empty DF
+            pass
+        except Exception as e:
+            # Handle other loading errors (e.g., corrupted data), df_reviews remains structured empty DF
+            print(f"Error loading reviews file: {e}")
+            pass
 
-    # Initialize reviews CSV
-    if os.path.exists(REVIEWS_FILE):
-        df_reviews = pd.read_csv(REVIEWS_FILE)
-    else:
-        df_reviews = pd.DataFrame(columns=['product_id', 'review', 'sentiment'])
-        df_reviews['product_id'] = df_reviews['product_id'].astype(float)
-        df_reviews.to_csv(REVIEWS_FILE, index=False)
-        
+    # 4. Post-load cleanup: Ensure product_id is an integer (Int64 handles NaN)
+    df_reviews['product_id'] = pd.to_numeric(df_reviews['product_id'], errors='coerce').fillna(0).astype('Int64')
+    
+    # 5. If the reviews file was just created or loaded empty, ensure the header is written.
+    if df_reviews.empty and (not os.path.exists(REVIEWS_FILE) or os.path.getsize(REVIEWS_FILE) == 0):
+         df_reviews.to_csv(REVIEWS_FILE, index=False)
+
     return df_products, df_reviews
 
 def save_products(df):
@@ -86,10 +111,9 @@ df_products, df_reviews = load_data()
 role = st.sidebar.radio("Select Role", ["User", "Admin"], index=0)
 
 st.sidebar.markdown("---")
-if 'df_products' in locals():
-    st.sidebar.metric("Total Products", len(df_products))
-if 'df_reviews' in locals():
-    st.sidebar.metric("Total Reviews", len(df_reviews))
+# Use the loaded df_products/df_reviews directly since they are global scope
+st.sidebar.metric("Total Products", len(df_products))
+st.sidebar.metric("Total Reviews", len(df_reviews))
 
 
 # ----------------------------
@@ -184,7 +208,7 @@ if role == "Admin":
         if st.session_state.get('confirm_clear_reviews', False):
             # Final confirmation step
             df_reviews = pd.DataFrame(columns=['product_id', 'review', 'sentiment'])
-            df_reviews['product_id'] = df_reviews['product_id'].astype(float)
+            df_reviews['product_id'] = df_reviews['product_id'].astype('Int64') # FIX: Use Int64 for consistency
             save_reviews(df_reviews)
             st.success("✅ All reviews have been successfully cleared.")
             st.session_state['confirm_clear_reviews'] = False
@@ -203,20 +227,21 @@ else: # Role == "User"
     col_filter, col_search = st.columns([1, 2])
     
     with col_filter:
-        region_filter = st.selectbox("Filter by Region", ["All"] + sorted(df_products['region'].unique().astype(str).tolist()))
+        # Convert to string before calling unique to handle potential mixed types gracefully
+        region_filter = st.selectbox("Filter by Region", ["All"] + sorted(df_products['region'].astype(str).unique().tolist()))
 
     with col_search:
         search_query = st.text_input("Search Product (Name or Description)", "")
     
     # 1. Apply Region Filter
-    display_products = df_products if region_filter == "All" else df_products[df_products['region'] == region_filter]
+    display_products = df_products if region_filter == "All" else df_products[df_products['region'].astype(str) == region_filter]
     
     # 2. Apply Search Filter
     if search_query:
         search_query = search_query.lower()
         display_products = display_products[
-            display_products['name'].str.lower().str.contains(search_query, na=False) |
-            display_products['description'].str.lower().str.contains(search_query, na=False)
+            display_products['name'].astype(str).str.lower().str.contains(search_query, na=False) |
+            display_products['description'].astype(str).str.lower().str.contains(search_query, na=False)
         ]
 
     if display_products.empty:
@@ -231,6 +256,7 @@ else: # Role == "User"
             
             with cols[j]:
                 # Calculate avg sentiment
+                # product_reviews will always have the 'sentiment' column now due to robust loading
                 product_reviews = df_reviews[df_reviews['product_id'] == product_id]
                 
                 total_reviews = len(product_reviews)
