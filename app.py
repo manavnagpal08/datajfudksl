@@ -261,7 +261,7 @@ else:
                     
                     if submitted:
                         # FIX: Moved global declaration to the very top of the submission block
-                        global df_products
+
                         
                         new_id = df_products['id'].max() + 1 if not df_products.empty else 1
                         new_id = int(new_id) 
