@@ -1083,8 +1083,10 @@ else:
                 right_on='product_id', 
                 how='left'
             ).fillna(0)
-            df_merged['Total'] = df_merged.get('Positive', 0) + df_merged.get('Neutral', 0) + df_merged.get('Negative', 0)
-            df_merged['Pos_Percent'] = np.where(df_merged['Total'] > 0, (df_merged.get('Positive', 0) / df_merged['Total']) * 100, 0)
+            
+            # FIX: Rename 'Total' to 'Review_Count' to match aggregation name later
+            df_merged['Review_Count'] = df_merged.get('Positive', 0) + df_merged.get('Neutral', 0) + df_merged.get('Negative', 0)
+            df_merged['Pos_Percent'] = np.where(df_merged['Review_Count'] > 0, (df_merged.get('Positive', 0) / df_merged['Review_Count']) * 100, 0)
 
             # Tab 1: Category & Regional Heatmap
             with tabs[0]:
@@ -1108,6 +1110,8 @@ else:
                 
                 st.markdown("---")
                 st.subheader("Category-Level Overall Analytics")
+                
+                # THIS SECTION NOW WORKS because 'Review_Count' is available in df_merged
                 cat_summary = df_merged.groupby('category').agg(
                     Avg_Pos_Rate=('Pos_Percent', 'mean'),
                     Total_Reviews=('Review_Count', 'sum'),
@@ -1124,6 +1128,7 @@ else:
                 st.subheader("🎈 Product Review Volume vs. Positive Rate")
                 
                 # Filter for products with at least 1 review
+                # Uses Review_Count
                 bubble_data = df_merged[df_merged['Review_Count'] > 0].copy()
                 
                 fig_bubble = px.scatter(
@@ -1174,6 +1179,7 @@ else:
 
                 with col_top:
                     st.markdown("#### Top 10 Products (Min 5 Reviews)")
+                    # Uses Review_Count
                     top_10 = product_performance[product_performance['Review_Count'] >= 5].head(10)
                     if not top_10.empty:
                         fig_perf = px.bar(top_10, 
@@ -1189,6 +1195,7 @@ else:
                 
                 with col_worst:
                     st.markdown("#### Bottom 10 Products (Min 5 Reviews)")
+                    # Uses Review_Count
                     bottom_10 = product_performance[product_performance['Review_Count'] >= 5].tail(10).sort_values(by='Pos_Percent', ascending=True)
                     if not bottom_10.empty:
                         fig_worst = px.bar(bottom_10, 
