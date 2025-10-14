@@ -223,8 +223,11 @@ def load_initial_data():
     # Ensure all required product columns are present
     for col in PRODUCTS_COLUMNS:
         if col not in df_products.columns:
-            df_products[col] = 'Uncategorized' if col == 'category' else None
+            # Explicitly add missing column with default value
+            default_value = 'Uncategorized' if col == 'category' else None
+            df_products.loc[:, col] = default_value
     
+    # Ensure 'category' is a string and fill any remaining NaNs
     df_products['category'] = df_products['category'].fillna('Uncategorized').astype(str)
     
     # Load reviews
@@ -515,7 +518,12 @@ else:
                         current_category = st.session_state['df_products'][st.session_state['df_products']['id']==prod_id_to_edit]['category'].iloc[0] if prod_id_to_edit is not None else "Uncategorized"
                         
                         # Get all existing unique categories
-                        all_categories = st.session_state['df_products']['category'].unique().tolist()
+                        # Use a defensive check here as well
+                        if 'category' in st.session_state['df_products'].columns:
+                            all_categories = st.session_state['df_products']['category'].unique().tolist()
+                        else:
+                            all_categories = ['Uncategorized']
+
                         if 'Uncategorized' not in all_categories: all_categories.append('Uncategorized')
                         
                         st.markdown(f"**Current Category:** `{current_category}`")
@@ -567,7 +575,15 @@ else:
             region_filter = st.selectbox("Filter by Region", ["All"] + sorted(st.session_state['df_products']['region'].astype(str).unique().tolist()))
 
         with col_filter_category:
-            category_filter = st.selectbox("Filter by Category", ["All"] + sorted(st.session_state['df_products']['category'].astype(str).unique().tolist()))
+            # --- FIX APPLIED HERE: Defensive check for 'category' column ---
+            if 'category' in st.session_state['df_products'].columns:
+                unique_categories = st.session_state['df_products']['category'].astype(str).unique().tolist()
+            else:
+                # Fallback if the column is missing to prevent KeyError
+                unique_categories = ['Uncategorized']
+                
+            category_filter = st.selectbox("Filter by Category", ["All"] + sorted(unique_categories))
+            # --- END FIX ---
 
         with col_sort:
             sort_option = st.selectbox("Sort By", ["ID", "Price (L-H)", "Price (H-L)"])
@@ -602,8 +618,12 @@ else:
         if region_filter != "All":
             display_products = display_products[display_products['region'].astype(str) == region_filter]
         
-        if category_filter != "All":
+        # Check for category column existence before applying category filter
+        if 'category' in display_products.columns and category_filter != "All":
             display_products = display_products[display_products['category'].astype(str) == category_filter]
+        elif 'category' not in display_products.columns:
+            st.warning("Category column missing for filtering. Please refresh data if this persists.")
+
 
         if search_query:
             search_query = search_query.lower()
@@ -645,7 +665,7 @@ else:
                     <div class="product-card">
                     <div class='card-content'>
                         <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
-                        <p style='font-size: 0.9em; color: #3b82f6; font-weight: bold; margin-bottom: 10px;'>{product['category']}</p>
+                        <p style='font-size: 0.9em; color: #3b82f6; font-weight: bold; margin-bottom: 10px;'>{product['category'] if 'category' in product else 'Uncategorized'}</p>
                         <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
                         <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
                         <p><b>Price: ₹{product['price']:.2f}</b></p>
@@ -750,25 +770,37 @@ else:
                 st.subheader("Sentiment Count Per Product")
                 
                 sentiment_summary = df_reviews.groupby(['product_id','sentiment']).size().unstack(fill_value=0)
+                
+                # Check for category column before merging
+                product_cols_to_merge = ['name']
+                if 'category' in df_products.columns:
+                    product_cols_to_merge.append('category')
+
                 sentiment_summary = sentiment_summary.join(
-                    df_products.set_index('id')[['name', 'category']].rename({'name': 'Product Name', 'category': 'Category'}, axis=1)
+                    df_products.set_index('id')[product_cols_to_merge].rename({'name': 'Product Name', 'category': 'Category'}, axis=1)
                 ).fillna(0).reset_index()
                 
                 for s in ['Positive', 'Neutral', 'Negative']:
                     if s not in sentiment_summary.columns: sentiment_summary[s] = 0
 
                 if not sentiment_summary.empty:
+                    hover_data = ['Category'] if 'Category' in sentiment_summary.columns else None
                     fig2 = px.bar(sentiment_summary, x='Product Name', y=['Positive','Neutral','Negative'],
                                   title="Sentiment Count per Product", 
                                   color_discrete_map={'Positive':'#34D399','Neutral':'#FACC15','Negative':'#F87171'},
-                                  hover_data=['Category']) # Added category to hover
+                                  hover_data=hover_data) 
                     st.plotly_chart(fig2, use_container_width=True)
             
             # Tab 3: Top/Worst Performing Products (with Category Filter)
             with tabs[2]:
                 st.subheader("🏆 Top and Worst Performing Products by Positive Rate")
                 
-                all_categories = st.session_state['df_products']['category'].astype(str).unique().tolist()
+                # Defensive retrieval of categories
+                if 'category' in st.session_state['df_products'].columns:
+                    all_categories = st.session_state['df_products']['category'].astype(str).unique().tolist()
+                else:
+                    all_categories = ['Uncategorized']
+
                 perf_category_filter = st.selectbox(
                     "Filter Performance by Category", 
                     ["All"] + sorted(all_categories), 
@@ -780,13 +812,16 @@ else:
                 product_performance = display_products[display_products['Pos_Percent'].notna() & (display_products['Pos_Percent'] >= 0)].copy()
                 
                 # Apply category filter specifically for performance charts
-                if perf_category_filter != "All":
+                if 'category' in product_performance.columns and perf_category_filter != "All":
                     product_performance = product_performance[product_performance['category'].astype(str) == perf_category_filter]
 
                 if product_performance.empty:
                     st.info(f"No products with review data match the criteria, or no products found in **{perf_category_filter}**.")
                 else:
                     st.markdown(f"#### Results filtered for Category: **{perf_category_filter}**")
+
+                    # Decide which columns to include in hover data
+                    perf_hover_data = ['category'] if 'category' in product_performance.columns else None
 
                     # Sort for visualization (Top 10 only for clarity)
                     product_performance = product_performance.sort_values(by='Pos_Percent', ascending=False)
@@ -798,7 +833,7 @@ else:
                                       title="Top 10 Products by Positive Sentiment Rate",
                                       color='Pos_Percent',
                                       color_continuous_scale=px.colors.sequential.Plotly3,
-                                      hover_data=['category'])
+                                      hover_data=perf_hover_data)
                     fig_perf.update_layout(yaxis_title="Positive Rate (%)")
                     st.plotly_chart(fig_perf, use_container_width=True)
                     
@@ -811,7 +846,7 @@ else:
                                       title="Bottom 10 Products by Positive Sentiment Rate",
                                       color='Pos_Percent',
                                       color_continuous_scale=px.colors.sequential.Reds_r, # Reverse color scale for bad performance
-                                      hover_data=['category'])
+                                      hover_data=perf_hover_data)
                     fig_worst.update_layout(yaxis_title="Positive Rate (%)")
                     st.plotly_chart(fig_worst, use_container_width=True)
 
@@ -860,9 +895,10 @@ else:
                 with col_pos_extreme:
                     st.markdown("#### Top 5 Most Positive Reviews")
                     for _, row in top_positive.iterrows():
-                        product_data = df_products[df_products['id'] == row['product_id']].iloc[0]
-                        product_name = product_data['name'] if not df_products[df_products['id'] == row['product_id']].empty else "Unknown Product"
-                        product_category = product_data['category']
+                        product_data = df_products[df_products['id'] == row['product_id']]
+                        product_name = product_data['name'].iloc[0] if not product_data.empty else "Unknown Product"
+                        product_category = product_data['category'].iloc[0] if 'category' in product_data.columns and not product_data.empty else "Uncategorized"
+
                         st.success(f"{POSITIVE_EMOJI} **{product_name}** ({product_category}) - *{row['sentiment']}*")
                         st.write(f"_{row['review']}_")
                         st.markdown("---")
@@ -870,9 +906,10 @@ else:
                 with col_neg_extreme:
                     st.markdown("#### Top 5 Most Negative Reviews")
                     for _, row in top_negative.iterrows():
-                        product_data = df_products[df_products['id'] == row['product_id']].iloc[0]
-                        product_name = product_data['name'] if not df_products[df_products['id'] == row['product_id']].empty else "Unknown Product"
-                        product_category = product_data['category']
+                        product_data = df_products[df_products['id'] == row['product_id']]
+                        product_name = product_data['name'].iloc[0] if not product_data.empty else "Unknown Product"
+                        product_category = product_data['category'].iloc[0] if 'category' in product_data.columns and not product_data.empty else "Uncategorized"
+
                         st.error(f"{NEGATIVE_EMOJI} **{product_name}** ({product_category}) - *{row['sentiment']}*")
                         st.write(f"_{row['review']}_")
                         st.markdown("---")
@@ -906,23 +943,34 @@ else:
                 # Calculate review length here just in case it wasn't done earlier
                 filtered_reviews['review_length'] = filtered_reviews['review'].str.len()
                 filtered_reviews = filtered_reviews[filtered_reviews['review_length'] >= min_length]
+                
+                # Conditional merge based on column existence
+                cols_for_merge = ['name']
+                if 'category' in df_products.columns:
+                    cols_for_merge.append('category')
 
                 filtered_reviews = filtered_reviews.join(
-                    df_products.set_index('id')[['name', 'category']].rename({'name': 'Product Name', 'category': 'Category'}, axis=1),
+                    df_products.set_index('id')[cols_for_merge].rename({'name': 'Product Name', 'category': 'Category'}, axis=1),
                     on='product_id'
                 )
                 
-                display_df = filtered_reviews[['Product Name', 'Category', 'review', 'sentiment', 'product_id', 'timestamp']]
+                display_cols = ['Product Name', 'review', 'sentiment', 'product_id', 'timestamp']
+                col_config = {
+                    "review": st.column_config.TextColumn("Review Content", width="large"),
+                    "sentiment": st.column_config.TextColumn("Predicted Sentiment", width="small"),
+                    "Product Name": st.column_config.TextColumn("Product Name", width="medium"),
+                    "product_id": "ID",
+                    "timestamp": st.column_config.DatetimeColumn("Review Date", format="YYYY-MM-DD HH:mm")
+                }
+                
+                if 'Category' in filtered_reviews.columns:
+                    display_cols.insert(1, 'Category')
+                    col_config["Category"] = st.column_config.TextColumn("Category", width="small")
+
+                display_df = filtered_reviews[display_cols]
                 
                 st.dataframe(
                     display_df, 
                     use_container_width=True,
-                    column_config={
-                        "review": st.column_config.TextColumn("Review Content", width="large"),
-                        "sentiment": st.column_config.TextColumn("Predicted Sentiment", width="small"),
-                        "Product Name": st.column_config.TextColumn("Product Name", width="medium"),
-                        "Category": st.column_config.TextColumn("Category", width="small"), # New column
-                        "product_id": "ID",
-                        "timestamp": st.column_config.DatetimeColumn("Review Date", format="YYYY-MM-DD HH:mm")
-                    }
+                    column_config=col_config
                 )
