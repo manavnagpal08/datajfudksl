@@ -260,8 +260,8 @@ else:
                     submitted = st.form_submit_button("Add Product")
                     
                     if submitted:
-                        # FIX: Moved global declaration to the very top of the submission block
-
+                        # FIX 1: Moved global declaration to the very top of the submission block
+                        global df_products
                         
                         new_id = df_products['id'].max() + 1 if not df_products.empty else 1
                         new_id = int(new_id) 
@@ -280,7 +280,7 @@ else:
                     delete_submitted = st.form_submit_button("Delete Product")
 
                     if delete_submitted:
-                        # FIX: Moved global declarations to the very top of the submission block
+                        # FIX 2: Explicitly placed global declarations as the first lines
                         global df_products
                         global df_reviews
                         
@@ -308,6 +308,10 @@ else:
             uploaded_file = st.file_uploader("Upload File", type=["csv", "json"])
             
             if uploaded_file:
+                # FIX 3: Global declaration moved to the start of the `if uploaded_file` block 
+                # to prevent usage prior to declaration in complex flow.
+                global df_products
+                
                 try:
                     file_extension = uploaded_file.name.split('.')[-1]
                     
@@ -325,9 +329,7 @@ else:
                     if bulk_df.empty or not all(col in bulk_df.columns for col in required_cols):
                         st.error(f"Uploaded file is empty or missing required columns: {required_cols}")
                     else:
-                        # FIX: Added global declaration for modification
-                        global df_products
-                        
+                        # df_products['id'].max() is the first use, now safe above
                         start_id = df_products['id'].max() + 1 if not df_products.empty else 1
                         bulk_df['id'] = range(int(start_id), int(start_id) + len(bulk_df))
                         
