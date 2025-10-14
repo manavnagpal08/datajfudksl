@@ -8,6 +8,7 @@ from datetime import datetime
 from collections import Counter
 import re
 import time
+from math import ceil
 
 # --- Configuration and Constants ---
 PRODUCTS_FILE = "data/products.csv"
@@ -15,11 +16,93 @@ REVIEWS_FILE = "data/reviews.csv"
 MODEL_PATH = "model/sentiment_model.pkl"
 VECTORIZER_PATH = "model/vectorizer.pkl"
 
+# Sentiment Emojis
+POSITIVE_EMOJI = "✅"
+NEGATIVE_EMOJI = "❌"
+NEUTRAL_EMOJI = "🟡" 
+
 # Custom Credentials provided by user
 USERS = {
     "admin": {"password": "admin123", "role": "Admin"},
     "user": {"password": "user123", "role": "User"}
 }
+
+# --- Internal Review Synthesis Logic (API-FREE) ---
+def get_top_sentiment_words(df_subset, sentiment, n=3):
+    """Calculates top N words for a specific sentiment."""
+    if df_subset.empty: return []
+    
+    # Standard stop words plus generic e-commerce terms
+    stop_words = set([
+        'the', 'a', 'an', 'is', 'it', 'and', 'but', 'or', 'to', 'of', 'in', 'for', 
+        'with', 'on', 'this', 'that', 'i', 'was', 'my', 'had', 'have', 'very', 'not',
+        'would', 'me', 'be', 'so', 'get', 'product', 'item', 'just', 'too', 'great', 
+        'good', 'bad', 'best', 'worst', 'really', 'much', 'like', 'for', 'about', 'is', 'i',
+        'can', 'will', 'use', 'one', 'get', 'it', 'if', 'this'
+    ])
+    
+    subset = df_subset[df_subset['sentiment'] == sentiment]
+    if subset.empty: return []
+
+    text = ' '.join(subset['review'].astype(str).str.lower().tolist())
+    words = re.findall(r'\b\w{3,}\b', text) # Only include words with 3+ characters
+    filtered_words = [word for word in words if word not in stop_words and len(word) > 1]
+    word_counts = Counter(filtered_words)
+    return [word.capitalize() for word, count in word_counts.most_common(n)]
+
+def generate_product_summary_internal(product_name, reviews_df):
+    """
+    Generates a synthesized product review summary based *only* on internal analytics.
+    (This replaces the external LLM API call.)
+    """
+    if reviews_df.empty or len(reviews_df) < 5:
+        return "Insufficient reviews (requires 5+ reviews) to generate a comprehensive, objective summary."
+
+    total = len(reviews_df)
+    pos_count = len(reviews_df[reviews_df['sentiment'] == 'Positive'])
+    neg_count = len(reviews_df[reviews_df['sentiment'] == 'Negative'])
+    
+    pos_rate = pos_count / total
+    
+    # 1. Determine Overall Sentiment Score
+    if pos_rate >= 0.8:
+        overall_sentiment = "Outstanding"
+        sentiment_description = "The customer reception is overwhelmingly positive, marking this as a top-tier product."
+    elif pos_rate >= 0.6:
+        overall_sentiment = "Strong"
+        sentiment_description = "The feedback is mostly positive, suggesting high customer satisfaction with minor caveats."
+    elif pos_rate >= 0.4:
+        overall_sentiment = "Mixed/Neutral"
+        sentiment_description = "The product receives balanced feedback, with strengths and weaknesses equally highlighted by customers."
+    else:
+        overall_sentiment = "Critical"
+        sentiment_description = "A significant portion of reviews express negative experiences, indicating serious issues need immediate attention."
+
+    # 2. Identify Strengths (Top positive keywords)
+    top_pos_words = get_top_sentiment_words(reviews_df, 'Positive', n=3)
+    if top_pos_words:
+        strengths = f"Key strengths frequently mentioned by positive reviewers include **{', '.join(top_pos_words[:-1])}**, and **{top_pos_words[-1]}**."
+    else:
+        strengths = "No distinct positive features were clearly highlighted by reviewers."
+
+    # 3. Identify Weaknesses (Top negative keywords)
+    top_neg_words = get_top_sentiment_words(reviews_df, 'Negative', n=3)
+    if top_neg_words:
+        weaknesses = f"The primary areas for improvement, according to negative feedback, concern **{', '.join(top_neg_words[:-1])}**, and **{top_neg_words[-1]}**."
+    else:
+        weaknesses = "No specific critical issues were clearly highlighted in negative feedback."
+
+
+    # 4. Synthesize Final Paragraph
+    final_summary = (
+        f"**Overall Assessment:** {overall_sentiment} ({pos_count} Positive reviews out of {total}). "
+        f"{sentiment_description} "
+        f"{strengths} "
+        f"{weaknesses}"
+    )
+    
+    return final_summary
+
 
 # --- Aesthetics (Custom CSS for a more beautiful UI) ---
 st.markdown("""
@@ -31,12 +114,11 @@ st.markdown("""
     }
     h1, h2, h3, h4 {
         color: #1f2937;
+        font-weight: 700;
     }
-    /* Main header styling */
     h1 {
-        border-bottom: 3px solid #3b82f6; /* Blue underline */
+        border-bottom: 3px solid #3b82f6; 
         padding-bottom: 15px;
-        font-weight: 800;
         margin-top: 0;
     }
     
@@ -51,15 +133,16 @@ st.markdown("""
         position: fixed;
         top: 0;
         left: 0;
+        background: linear-gradient(135deg, #f0f2f6 0%, #e0e5ec 100%);
     }
     .login-box {
         max-width: 400px;
         width: 90%;
-        padding: 45px 30px;
+        padding: 50px 40px;
         border-radius: 16px;
         background-color: #ffffff;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        border: 1px solid #dcdcdc;
     }
     
     /* Product Card Styling */
@@ -68,15 +151,15 @@ st.markdown("""
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 25px;
-        min-height: 480px; 
-        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        min-height: 520px; 
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         background-color: #ffffff;
         text-align: center;
         transition: transform 0.3s, box-shadow 0.3s;
     }
     .product-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 18px 40px rgba(0,0,0,0.15);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.18);
     }
 
     /* Custom button styling (Primary action) */
@@ -96,8 +179,25 @@ st.markdown("""
     
     /* Sentiment Colors */
     .pos-text { color: #10B981; font-weight: bold; }
-    .neu-text { color: #FBBF24; font-weight: bold; }
     .neg-text { color: #EF4444; font-weight: bold; }
+    .neu-text { color: #FBBF24; font-weight: bold; }
+
+    /* Custom Metrics Boxes (Enhanced Visuals) */
+    .metric-box {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        text-align: center;
+        margin-bottom: 15px;
+        transition: all 0.2s ease-in-out;
+    }
+    .metric-box:hover {
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    .pos-metric { border-left: 5px solid #10B981; }
+    .neg-metric { border-left: 5px solid #EF4444; }
+    .total-metric { border-left: 5px solid #3b82f6; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -131,10 +231,6 @@ def load_initial_data():
          df_reviews.to_csv(REVIEWS_FILE, index=False) 
 
     return df_products, df_reviews
-
-def save_products():
-    """Saves the products DataFrame from session state to CSV."""
-    st.session_state['df_products'].to_csv(PRODUCTS_FILE, index=False)
 
 def save_reviews():
     """Saves the reviews DataFrame from session state to CSV."""
@@ -182,6 +278,7 @@ if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
     st.session_state['current_role'] = 'Guest'
     st.session_state['show_detail_id'] = None 
+    st.session_state['product_summary_cache'] = {} 
 
 # Initialize DataFrames into Session State
 if 'df_products' not in st.session_state or 'df_reviews' not in st.session_state:
@@ -210,25 +307,27 @@ def main_login_screen():
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
     with st.form("login_form"):
-        st.markdown("<h2 style='text-align: center; color: #3b82f6;'>E-Commerce Analytics Login</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center;'>E-Commerce Analytics Login</h2>", unsafe_allow_html=True)
         st.markdown("---")
         
+        # User input fields
         username = st.text_input("Username", key="login_username", placeholder="Enter your username")
         password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+        
         submitted = st.form_submit_button("Secure Login")
         
-        # NOTE: Removed display of credentials for better security presentation
-
         if submitted:
             if username in USERS and USERS[username]["password"] == password:
                 role = USERS[username]["role"]
                 st.session_state['logged_in'] = True
                 st.session_state['current_role'] = role
-                st.success(f"Logged in successfully as **{role}**!")
+                st.success(f"Logged in successfully as **{role}**! Redirecting...")
                 time.sleep(0.5)
                 st.rerun()
             else:
                 st.error("Invalid username or password. Please try again.")
+    
+    # NOTE: Credentials are NOT displayed here as requested.
     
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -238,6 +337,7 @@ def logout():
     st.session_state['logged_in'] = False
     st.session_state['current_role'] = 'Guest'
     st.session_state['show_detail_id'] = None
+    st.session_state['product_summary_cache'] = {}
     st.info("You have been logged out.")
     time.sleep(0.5)
     st.rerun()
@@ -248,7 +348,6 @@ def logout():
 
 def show_product_detail(product_id):
     """Shows detailed analytics for a single product."""
-    # Ensure data is still available
     if df_products[df_products['id'] == product_id].empty:
         st.error("Product not found.")
         st.session_state.update({'show_detail_id': None})
@@ -256,7 +355,7 @@ def show_product_detail(product_id):
         
     product = df_products[df_products['id'] == product_id].iloc[0]
     
-    st.header(f"Product Detail: {product['name']} (ID: {product_id})")
+    st.header(f"{product['name']} Detail Analysis (ID: {product_id})")
     st.button("← Back to Catalog", on_click=lambda: st.session_state.update({'show_detail_id': None}))
     
     product_reviews = df_reviews[df_reviews['product_id'] == product_id]
@@ -265,21 +364,38 @@ def show_product_detail(product_id):
         st.warning("No reviews available for detailed analysis yet.")
         return
 
-    # --- Metrics Section ---
-    total_reviews = len(product_reviews)
+    # 1. Internal Generated Summary (API-FREE)
+    st.subheader("📊 Internal Product Summary")
     
+    summary_placeholder = st.empty()
+    if product_id not in st.session_state['product_summary_cache']:
+        with summary_placeholder:
+            with st.spinner("Analyzing all reviews and synthesizing summary..."):
+                summary = generate_product_summary_internal(product['name'], product_reviews)
+                st.session_state['product_summary_cache'][product_id] = summary
+    
+    summary_placeholder.markdown(st.session_state['product_summary_cache'][product_id])
+    
+    # 2. Product Summary and Metrics (Enhanced Visuals)
+    st.markdown("---")
+    st.subheader("Review Metrics Breakdown")
+
+    total_reviews = len(product_reviews)
     sentiment_counts = product_reviews['sentiment'].value_counts(normalize=True).mul(100).round(1).to_dict()
     pos_p = sentiment_counts.get('Positive', 0)
     neu_p = sentiment_counts.get('Neutral', 0)
     neg_p = sentiment_counts.get('Negative', 0)
     
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-    col_m1.metric("Total Reviews", total_reviews)
-    col_m2.metric("Positive Rate", f"{pos_p}%", delta_color='normal')
-    col_m3.metric("Neutral Rate", f"{neu_p}%", delta_color='off')
-    col_m4.metric("Negative Rate", f"{neg_p}%", delta_color='inverse')
+    
+    # Display Metrics with custom HTML and Emojis
+    col_m1.markdown(f'<div class="metric-box total-metric">Total Reviews<br><b>{total_reviews}</b></div>', unsafe_allow_html=True)
+    col_m2.markdown(f'<div class="metric-box pos-metric">{POSITIVE_EMOJI} Positive Rate<br><b class="pos-text">{pos_p}%</b></div>', unsafe_allow_html=True)
+    col_m3.markdown(f'<div class="metric-box">{NEUTRAL_EMOJI} Neutral Rate<br><b class="neu-text">{neu_p}%</b></div>', unsafe_allow_html=True)
+    col_m4.markdown(f'<div class="metric-box neg-metric">{NEGATIVE_EMOJI} Negative Rate<br><b class="neg-text">{neg_p}%</b></div>', unsafe_allow_html=True)
 
-    # --- Time Series for this product ---
+
+    # 3. Time Series and Keywords
     st.markdown("---")
     st.subheader("Time Trend & Keyword Insights")
     
@@ -296,14 +412,14 @@ def show_product_detail(product_id):
         st.plotly_chart(fig_time, use_container_width=True)
     
     with col_key:
-        st.markdown("#### Top 5 Keywords (All Reviews)")
+        st.markdown("#### Top 5 Overall Keywords")
         all_words = get_top_words(product_reviews, n=5)
         st.dataframe(all_words, use_container_width=True, hide_index=True)
 
         st.markdown("#### Product Details")
         st.markdown(f"**Price:** ₹{product['price']:.2f}")
         st.markdown(f"**Region:** {product['region']}")
-        
+
 # ----------------------------
 # Main Application Flow
 # ----------------------------
@@ -327,26 +443,15 @@ else:
         st.rerun()
 
     if st.session_state['show_detail_id'] is not None:
-        # Show Product Detail View
         show_product_detail(st.session_state['show_detail_id'])
         
     else:
-        # Show Main Catalog and Dashboard
         st.title("🛒 E-Commerce Platform with Interactive Sentiment Analytics")
 
-        # ----------------------------
-        # Admin Section (Collapsed for cleaner UI)
-        # ----------------------------
         if st.session_state['current_role'] == "Admin":
             with st.expander("👑 Administrator Panel: Product Management"):
-                st.info("Use this panel to manage products and override incorrect sentiment predictions.")
-                # (Admin form logic removed for brevity to keep focus on new features)
-                st.dataframe(st.session_state['df_products'].head(3), use_container_width=True)
+                st.info("Manage products and override incorrect sentiment predictions.")
 
-        # ----------------------------
-        # User Section & Dashboard 
-        # ----------------------------
-        
         st.header("🛍 Product Catalog")
 
         # Interactive Filter and Search
@@ -381,10 +486,8 @@ else:
                 how='left'
             ).fillna({'Pos_Percent': 0, 'Neg_Percent': 0})
             
-            # Apply minimum positive sentiment filter
             display_products = display_products[display_products['Pos_Percent'] >= min_pos_percent]
 
-        # Apply region and search filters (assuming they were applied correctly in the previous step)
         if region_filter != "All":
             display_products = display_products[display_products['region'].astype(str) == region_filter]
         
@@ -395,7 +498,6 @@ else:
                 display_products['description'].astype(str).str.lower().str.contains(search_query, na=False)
             ]
 
-        # Apply sorting
         if sort_option == "Price (Low to High)":
             display_products = display_products.sort_values(by='price', ascending=True)
         elif sort_option == "Price (High to Low)":
@@ -416,7 +518,6 @@ else:
                 with cols[j]:
                     total_reviews = len(df_reviews[df_reviews['product_id'] == product_id])
                     
-                    # Use merged percentages if available, otherwise calculate on the fly (for robustness)
                     pos_percent_val = product.get('Pos_Percent', 0)
                     neg_percent_val = product.get('Neg_Percent', 0)
                     neu_percent_val = 100 - pos_percent_val - neg_percent_val
@@ -425,27 +526,27 @@ else:
                     neu_percent = f"{neu_percent_val:.0f}%"
                     neg_percent = f"{neg_percent_val:.0f}%"
                         
-                    # Custom HTML for Card
+                    # Custom HTML for Card (Integrating Emojis and better layout)
                     st.markdown(f"""
                     <div class="product-card">
-                    <h4 style="height: 40px; overflow: hidden;">{product['name']} (ID: {product_id})</h4>
-                    <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 10px;">
+                    <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
+                    <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
                     <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
                     <p><b>Price: ₹{product['price']:.2f}</b></p>
                     
-                    <div style='display: flex; justify-content: space-around; font-size: 0.8em; margin-top: 10px;'>
-                        <span class='pos-text'>{pos_percent} Pos</span>
-                        <span class='neu-text'>{neu_percent} Neu</span>
-                        <span class='neg-text'>{neg_percent} Neg</span>
+                    <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
+                        <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
+                        <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
+                        <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
                     </div>
-                    <p style='font-size: 0.75em; color: #888;'>({total_reviews} reviews analyzed)</p>
+                    <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     <div style='height: 10px;'></div> 
                     </div>
                     """, unsafe_allow_html=True)
                     
                     st.button("View Detail Analytics", 
                               key=f"detail_btn_{product_id}",
-                              on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid}),
+                              on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid, 'product_summary_cache': {}}), 
                               use_container_width=True)
 
                     with st.expander(f"Write a Review for {product['name']}"):
@@ -454,8 +555,17 @@ else:
                         
                         if submit_review and review_text.strip() != "":
                             if model_ready:
-                                # Submission logic...
-                                pass # Logic remains the same
+                                sentiment = predict_sentiment(review_text, st.session_state['vectorizer'], st.session_state['clf'])
+                                new_review = pd.DataFrame([[product_id, review_text, sentiment, datetime.now()]],
+                                                            columns=['product_id', 'review', 'sentiment', 'timestamp'])
+                                
+                                st.session_state['df_reviews'] = pd.concat([st.session_state['df_reviews'], new_review], ignore_index=True)
+                                save_reviews()
+                                
+                                emoji_result = POSITIVE_EMOJI if sentiment=="Positive" else NEUTRAL_EMOJI if sentiment=="Neutral" else NEGATIVE_EMOJI
+                                st.success(f"Review submitted! Predicted Sentiment: **{sentiment}** {emoji_result}")
+                                st.cache_data.clear()
+                                st.rerun() 
                             else:
                                 st.error("Cannot submit review: Sentiment model is not loaded.")
 
@@ -463,7 +573,7 @@ else:
         # Dashboard Tabs 
         # ----------------------------
         st.markdown("---")
-        st.header("📊 Sentiment Analytics Dashboard")
+        st.header("📊 Global Sentiment Analytics Dashboard")
 
         if df_reviews.empty:
             st.info("No reviews have been submitted yet to generate the dashboard.")
@@ -481,14 +591,15 @@ else:
             tabs = st.tabs([
                 "Overall Breakdown", 
                 "Product Performance", 
-                "Price Quartile Analysis (NEW)", 
-                "Extreme Reviews (NEW)",
+                "Top/Worst Performers (NEW)", 
+                "Price Quartile Analysis", 
+                "Extreme Reviews",
                 "Raw Reviews Table"
             ])
 
             # Tab 1: Overall sentiment 
             with tabs[0]:
-                st.subheader("Overall Sentiment Distribution")
+                st.subheader("Global Sentiment Distribution")
                 fig = px.pie(st.session_state['df_reviews'], names='sentiment', title="Distribution of All Customer Feedback",
                              color='sentiment', 
                              color_discrete_map={'Positive':'#34D399','Neutral':'#FACC15','Negative':'#F87171'})
@@ -498,9 +609,9 @@ else:
             with tabs[1]:
                 st.subheader("Sentiment Count Per Product")
                 
-                sentiment_summary = st.session_state['df_reviews'].groupby(['product_id','sentiment']).size().unstack(fill_value=0)
+                sentiment_summary = df_reviews.groupby(['product_id','sentiment']).size().unstack(fill_value=0)
                 sentiment_summary = sentiment_summary.join(
-                    st.session_state['df_products'].set_index('id')['name'].rename('Product Name')
+                    df_products.set_index('id')['name'].rename('Product Name')
                 ).fillna(0).reset_index()
                 
                 for s in ['Positive', 'Neutral', 'Negative']:
@@ -508,12 +619,45 @@ else:
 
                 if not sentiment_summary.empty:
                     fig2 = px.bar(sentiment_summary, x='Product Name', y=['Positive','Neutral','Negative'],
-                                  title="Sentiment per Product", 
+                                  title="Sentiment Count per Product", 
                                   color_discrete_map={'Positive':'#34D399','Neutral':'#FACC15','Negative':'#F87171'})
                     st.plotly_chart(fig2, use_container_width=True)
             
-            # --- NEW FEATURE 1: Price Quartile Analysis ---
+            # --- NEW FEATURE: Top/Worst Performing Products ---
             with tabs[2]:
+                st.subheader("🏆 Top and Worst Performing Products by Positive Rate")
+                
+                product_performance = display_products[display_products['Pos_Percent'].notna() & (display_products['Pos_Percent'] >= 0)].copy()
+                
+                if product_performance.empty:
+                    st.info("No products with review data to display performance.")
+                else:
+                    # Sort for visualization (Top 10 only for clarity)
+                    product_performance = product_performance.sort_values(by='Pos_Percent', ascending=False)
+                    
+                    fig_perf = px.bar(product_performance.head(10), 
+                                      x='name', 
+                                      y='Pos_Percent',
+                                      title="Top 10 Products by Positive Sentiment Rate",
+                                      color='Pos_Percent',
+                                      color_continuous_scale=px.colors.sequential.Plotly3)
+                    fig_perf.update_layout(yaxis_title="Positive Rate (%)")
+                    st.plotly_chart(fig_perf, use_container_width=True)
+                    
+                    st.markdown("---")
+                    
+                    fig_worst = px.bar(product_performance.tail(10), 
+                                      x='name', 
+                                      y='Pos_Percent',
+                                      title="Bottom 10 Products by Positive Sentiment Rate",
+                                      color='Pos_Percent',
+                                      color_continuous_scale=px.colors.sequential.Reds_r) # Reverse color scale for bad performance
+                    fig_worst.update_layout(yaxis_title="Positive Rate (%)")
+                    st.plotly_chart(fig_worst, use_container_width=True)
+
+
+            # Tab 4: Price Quartile Analysis
+            with tabs[3]:
                 st.subheader("📈 Positive Sentiment Rate by Price Bracket")
                 
                 df_merged = df_products.merge(
@@ -523,64 +667,83 @@ else:
                     how='left'
                 ).fillna({'Pos_Percent': 0})
 
-                # Create price quartiles
-                df_merged['Price_Bracket'] = pd.qcut(df_merged['price'], q=3, labels=['Low Price', 'Medium Price', 'High Price'], duplicates='drop')
-                
-                price_sentiment = df_merged.groupby('Price_Bracket')['Pos_Percent'].mean().reset_index()
-                
-                fig_quartile = px.bar(price_sentiment, x='Price_Bracket', y='Pos_Percent',
-                                      title="Average Positive Review Rate across Product Price Brackets",
-                                      color='Pos_Percent',
-                                      color_continuous_scale=px.colors.sequential.Tealgrn)
-                fig_quartile.update_layout(yaxis_title="Average Positive Rate (%)")
-                st.plotly_chart(fig_quartile, use_container_width=True)
+                if not df_merged.empty and len(df_merged) >= 3:
+                    try:
+                        df_merged['Price_Bracket'] = pd.qcut(df_merged['price'], q=3, labels=['Low Price', 'Medium Price', 'High Price'], duplicates='drop')
+                        price_sentiment = df_merged.groupby('Price_Bracket')['Pos_Percent'].mean().reset_index()
+                        
+                        fig_quartile = px.bar(price_sentiment, x='Price_Bracket', y='Pos_Percent',
+                                              title="Average Positive Review Rate across Product Price Brackets",
+                                              color='Pos_Percent',
+                                              color_continuous_scale=px.colors.sequential.Tealgrn)
+                        fig_quartile.update_layout(yaxis_title="Average Positive Rate (%)")
+                        st.plotly_chart(fig_quartile, use_container_width=True)
+                    except ValueError:
+                        st.warning("Not enough distinct prices to create 3 price brackets.")
+                else:
+                    st.info("Not enough product data to perform price quartile analysis.")
 
-            # --- NEW FEATURE 2: Top Extreme Reviews ---
-            with tabs[3]:
+
+            # Tab 5: Top Extreme Reviews
+            with tabs[4]:
                 st.subheader("🔥 Top 5 Most Extreme Reviews")
                 
-                # Assign scores for sorting: Positive=1, Neutral=0, Negative=-1
                 sentiment_scores = df_reviews['sentiment'].map({'Positive': 1, 'Neutral': 0, 'Negative': -1})
                 df_reviews['sentiment_score'] = sentiment_scores
                 df_reviews['review_length'] = df_reviews['review'].str.len()
                 
-                # Sort by score (desc) and length (desc) for top positive
                 top_positive = df_reviews.sort_values(by=['sentiment_score', 'review_length'], ascending=[False, False]).head(5)
-                
-                # Sort by score (asc) and length (desc) for top negative
                 top_negative = df_reviews.sort_values(by=['sentiment_score', 'review_length'], ascending=[True, False]).head(5)
 
                 col_pos_extreme, col_neg_extreme = st.columns(2)
                 
                 with col_pos_extreme:
-                    st.markdown("#### Top 5 Most Positive Reviews (Highest Score/Longest)")
-                    for i, row in top_positive.iterrows():
+                    st.markdown("#### Top 5 Most Positive Reviews")
+                    for _, row in top_positive.iterrows():
                         product_name = df_products[df_products['id'] == row['product_id']]['name'].iloc[0]
-                        st.success(f"**{product_name}** - *{row['sentiment']}*")
+                        st.success(f"{POSITIVE_EMOJI} **{product_name}** - *{row['sentiment']}*")
                         st.write(f"_{row['review']}_")
                         st.markdown("---")
 
                 with col_neg_extreme:
-                    st.markdown("#### Top 5 Most Negative Reviews (Lowest Score/Longest)")
-                    for i, row in top_negative.iterrows():
+                    st.markdown("#### Top 5 Most Negative Reviews")
+                    for _, row in top_negative.iterrows():
                         product_name = df_products[df_products['id'] == row['product_id']]['name'].iloc[0]
-                        st.error(f"**{product_name}** - *{row['sentiment']}*")
+                        st.error(f"{NEGATIVE_EMOJI} **{product_name}** - *{row['sentiment']}*")
                         st.write(f"_{row['review']}_")
                         st.markdown("---")
 
 
-            # Tab 5: Raw Reviews table
-            with tabs[4]:
+            # Tab 6: Raw Reviews table
+            with tabs[5]:
                 st.subheader("🔍 All Customer Reviews (Interactive Filtering)")
                 
-                # Filtering logic remains the same (Date, Length, Sentiment)
-                # ... (Filtering components)
+                col_filt_sent, col_filt_date, col_filt_len = st.columns([1, 1, 1])
                 
-                filtered_reviews = st.session_state['df_reviews'].copy() # Use session state copy
-                # Apply filters (logic removed for brevity)
+                review_filter = col_filt_sent.multiselect(
+                    "Filter by Sentiment Type", 
+                    options=['Positive', 'Neutral', 'Negative'], 
+                    default=['Positive', 'Neutral', 'Negative'],
+                    key="review_table_filter"
+                )
+
+                min_date_val = df_reviews['timestamp'].min().date() if not df_reviews.empty else datetime.now().date()
+                min_date = col_filt_date.date_input("Filter from Date", 
+                                                value=min_date_val,
+                                                min_value=min_date_val
+                                            )
                 
+                min_length = col_filt_len.slider("Min Review Length (Chars)", 0, 100, 10)
+
+
+                filtered_reviews = df_reviews[df_reviews['sentiment'].isin(review_filter)].copy()
+                
+                filtered_reviews = filtered_reviews[filtered_reviews['timestamp'].dt.date >= min_date]
+                filtered_reviews['review_length'] = filtered_reviews['review'].str.len()
+                filtered_reviews = filtered_reviews[filtered_reviews['review_length'] >= min_length]
+
                 filtered_reviews = filtered_reviews.join(
-                    st.session_state['df_products'].set_index('id')['name'].rename('Product Name'), 
+                    df_products.set_index('id')['name'].rename('Product Name'), 
                     on='product_id'
                 )
                 
