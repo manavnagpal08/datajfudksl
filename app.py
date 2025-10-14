@@ -106,7 +106,7 @@ def generate_product_summary_internal(product_name, reviews_df):
 
     # 4. Synthesize Final Paragraph
     final_summary = (
-        f"<p style='font-size: 1.1em; line-height: 1.6;'><b>Overall Assessment: <span style='color:#3b82f6;'>{overall_sentiment}</span></b> ({pos_count} Positive reviews out of {total}). "
+        f"<p style='font-size: 1.1em; line-height: 1.6;'><b>Overall Assessment: <span style='color:#4338ca;'>{overall_sentiment}</span></b> ({pos_count} Positive reviews out of {total}). "
         f"{sentiment_description} "
         f"{strengths} "
         f"{weaknesses}</p>"
@@ -120,7 +120,7 @@ st.markdown("""
 <style>
     /* Global Styling */
     .stApp {
-        background-color: #f3f4f6; /* Light gray background */
+        background-color: #f9fafb; /* Very light, off-white background */
         font-family: 'Inter', sans-serif;
     }
     h1, h2, h3, h4 {
@@ -128,12 +128,13 @@ st.markdown("""
         font-weight: 700;
     }
     h1 {
-        border-bottom: 3px solid #6366f1; /* Tailwind Indigo 500 */
+        color: #4338ca; /* Deeper Indigo for emphasis */
+        border-bottom: 4px solid #4338ca; 
         padding-bottom: 15px;
         margin-top: 0;
     }
     
-    /* Login Page Styling - More Polish */
+    /* Login Page Styling - Sleeker Box */
     .login-container {
         display: flex;
         flex-direction: column;
@@ -144,36 +145,42 @@ st.markdown("""
         position: fixed;
         top: 0;
         left: 0;
-        background: linear-gradient(135deg, #eef2ff 0%, #f3f4f6 100%); /* Lighter, more airy gradient */
+        /* Subtle background gradient for depth */
+        background: radial-gradient(circle at 10% 20%, rgba(203, 213, 225, 0.4) 0%, #f9fafb 100%); 
     }
     .login-box {
-        max-width: 400px;
+        max-width: 420px;
         width: 90%;
         padding: 50px 40px;
-        border-radius: 16px;
+        border-radius: 20px; /* More rounded */
         background-color: #ffffff;
-        box-shadow: 0 10px 30px rgba(99,102,241,0.15); /* Indigo-tinted shadow */
-        border: 1px solid #e5e7eb;
+        /* Stronger, deeper shadow */
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05); 
+        border-top: 5px solid #4338ca; /* Accent border */
     }
     
-    /* Product Card Styling with Animation */
+    /* Product Card Styling with Enhanced Hover */
     .product-card {
-        border: none;
-        border-radius: 12px;
+        border: 1px solid #e5e7eb; /* Subtle border */
+        border-radius: 16px;
         padding: 20px;
         margin-bottom: 25px;
         min-height: 540px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06); /* Lighter shadow for modern feel */
+        /* Clean, subtle shadow */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02); 
         background-color: #ffffff;
         text-align: center;
-        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease-out; /* Smooth hover transition */
+        /* Enhanced transition */
+        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease-out; 
         display: flex;
         flex-direction: column;
     }
     .product-card:hover {
-        transform: translateY(-8px); /* Deeper lift on hover */
-        box-shadow: 0 20px 40px rgba(99,102,241,0.2); /* Highlighted shadow */
-        border: 1px solid #c7d2fe;
+        transform: translateY(-10px); /* Deeper lift on hover */
+        /* Focus shadow using primary color */
+        box-shadow: 0 25px 50px -12px rgba(67,56,202,0.25); 
+        z-index: 10;
+        border: 1px solid #a5b4fc; /* Lighter blue hint */
     }
     .card-content {
         flex-grow: 1;
@@ -181,41 +188,57 @@ st.markdown("""
 
     /* Custom button styling (Primary action) */
     .stButton>button {
-        border-radius: 8px;
+        border-radius: 10px; /* More rounded buttons */
         border: none;
         color: white !important;
-        background-color: #6366f1; /* Tailwind Indigo 500 */
-        padding: 10px 20px;
+        background-color: #4338ca; /* Deeper Indigo */
+        padding: 12px 24px;
         font-weight: 600;
-        transition: background-color 0.2s, transform 0.2s;
+        letter-spacing: 0.5px;
+        transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px #2e288e; /* Subtle depth */
     }
     .stButton>button:hover {
-        background-color: #4f46e5; /* Tailwind Indigo 600 */
-        transform: translateY(-1px);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        background-color: #312e81; /* Even deeper on hover */
+        transform: translateY(-2px);
+        box-shadow: 0 6px #2e288e; /* Lifted depth */
     }
     
-    /* Sentiment Colors */
-    .pos-text { color: #10B981; font-weight: bold; } /* Emerald */
-    .neg-text { color: #F87171; font-weight: bold; } /* Red */
-    .neu-text { color: #FBBF24; font-weight: bold; } /* Amber */
+    /* Sentiment Colors (Slightly adjusted shades) */
+    .pos-text { color: #059669; font-weight: bold; } /* Emerald 600 */
+    .neg-text { color: #dc2626; font-weight: bold; } /* Red 600 */
+    .neu-text { color: #f59e0b; font-weight: bold; } /* Amber 500 */
 
-    /* Custom Metrics Boxes (Enhanced Visuals) */
+    /* Custom Metrics Boxes (Modern, Clean Design) */
     .metric-box {
         background-color: #ffffff;
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         text-align: center;
         margin-bottom: 15px;
         transition: all 0.3s ease-in-out;
+        font-size: 1.1em;
     }
     .metric-box:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
-    .pos-metric { border-left: 5px solid #10B981; }
-    .neg-metric { border-left: 5px solid #F87171; }
-    .total-metric { border-left: 5px solid #6366f1; }
+    /* Distinct border colors for metrics */
+    .pos-metric { border-left: 6px solid #059669; }
+    .neg-metric { border-left: 6px solid #dc2626; }
+    .total-metric { border-left: 6px solid #4338ca; }
+    
+    /* Card Review Score Bar - Cleaner Look */
+    .score-bar {
+        display: flex; 
+        justify-content: space-around; 
+        font-size: 0.85em; 
+        margin-top: 15px; 
+        padding: 12px 5px; /* Increased vertical padding */
+        background-color: #f3f4f6; /* Lighter bar background */
+        border-radius: 10px; /* More rounded bar */
+        border: 1px solid #e5e7eb;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -229,11 +252,11 @@ def generate_sample_products(current_max_id):
     next_id = current_max_id + 1
     
     sample_data = [
-        {'id': next_id, 'name': 'Ultra-HD Monitor', 'price': 34999.00, 'region': 'North', 'image_url': 'https://placehold.co/150x150/6366f1/ffffff?text=Monitor', 'description': '4K monitor with high refresh rate.', 'category': 'Electronics'},
-        {'id': next_id + 1, 'name': 'Organic Cotton T-Shirt', 'price': 1299.00, 'region': 'South', 'image_url': 'https://placehold.co/150x150/10b981/ffffff?text=T-Shirt', 'description': 'Sustainable and comfortable wear.', 'category': 'Clothing & Footwear'},
+        {'id': next_id, 'name': 'Ultra-HD Monitor', 'price': 34999.00, 'region': 'North', 'image_url': 'https://placehold.co/150x150/4338ca/ffffff?text=Monitor', 'description': '4K monitor with high refresh rate.', 'category': 'Electronics'},
+        {'id': next_id + 1, 'name': 'Organic Cotton T-Shirt', 'price': 1299.00, 'region': 'South', 'image_url': 'https://placehold.co/150x150/059669/ffffff?text=T-Shirt', 'description': 'Sustainable and comfortable wear.', 'category': 'Clothing & Footwear'},
         {'id': next_id + 2, 'name': 'Luxury Leather Sofa', 'price': 129000.00, 'region': 'West', 'image_url': 'https://placehold.co/150x150/f97316/ffffff?text=Sofa', 'description': 'Three-seater genuine leather.', 'category': 'Furniture'},
         {'id': next_id + 3, 'name': 'Moisturizing Cream Set', 'price': 4500.00, 'region': 'East', 'image_url': 'https://placehold.co/150x150/ec4899/ffffff?text=Cream', 'description': 'Day and night moisturizing routine.', 'category': 'Cosmetics'},
-        {'id': next_id + 4, 'name': 'Assorted Fresh Fruit Box', 'price': 999.00, 'region': 'North', 'image_url': 'https://placehold.co/150x150/fbbf24/ffffff?text=Fruit', 'description': 'Weekly box of seasonal fruits.', 'category': 'Groceries'},
+        {'id': next_id + 4, 'name': 'Assorted Fresh Fruit Box', 'price': 999.00, 'region': 'North', 'image_url': 'https://placehold.co/150x150/f59e0b/ffffff?text=Fruit', 'description': 'Weekly box of seasonal fruits.', 'category': 'Groceries'},
         {'id': next_id + 5, 'name': 'The Great Classic Novel', 'price': 750.00, 'region': 'South', 'image_url': 'https://placehold.co/150x150/a855f7/ffffff?text=Book', 'description': 'A must-read for all students.', 'category': 'Books'},
     ]
     return pd.DataFrame(sample_data)
@@ -366,7 +389,7 @@ def main_login_screen():
 
     with st.form("login_form"):
         # Enhanced title and header
-        st.markdown("<h2 style='text-align: center; color: #6366f1;'>📈 E-Commerce Analytics Hub</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #4338ca;'>📈 E-Commerce Analytics Hub</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #4b5563; margin-bottom: 25px;'>Securely access your data insights.</p>", unsafe_allow_html=True)
         st.markdown("---")
         
@@ -485,7 +508,7 @@ def show_product_detail(product_id):
         
         fig_time = px.line(time_series, x='date', y='count', color='sentiment',
                            title=f"Daily Sentiment Trend",
-                           color_discrete_map={'Positive':'#10B981','Neutral':'#FBBF24','Negative':'#F87171'})
+                           color_discrete_map={'Positive':'#059669','Neutral':'#f59e0b','Negative':'#dc2626'}) # Updated colors
         st.plotly_chart(fig_time, use_container_width=True)
     
     with col_key:
@@ -706,17 +729,20 @@ else:
                     # Custom HTML for Card (Integrating Emojis and better layout)
                     st.markdown(f"""
                     <div class="product-card">
-                    <h4 style="height: 40px; overflow: hidden;">{product['name']}</h4>
-                    <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150/EEEEEE/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
-                    <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
-                    <p><b>Price: ₹{product['price']:.2f}</b></p>
-                    
-                    <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
-                        <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
-                        <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
-                        <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
+                    <div class='card-content'>
+                        <h4 style="height: 40px; overflow: hidden; color: #4338ca;">{product['name']}</h4>
+                        <p style='font-size: 0.9em; color: #6366f1; font-weight: bold; margin-bottom: 10px;'>{category_icon} {category}</p>
+                        <img src="{product['image_url']}" onerror="this.onerror=null;this.src='https://placehold.co/150x150/d1d5db/000000?text=No+Image';" width="150" style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
+                        <p style="height: 60px; overflow: hidden; font-size: 0.9em; color: #555;">{product['description']}</p>
+                        <p style='font-size: 1.2em; font-weight: 700; color: #1f2937;'>Price: ₹{product['price']:.2f}</p>
+                        
+                        <div class='score-bar'>
+                            <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
+                            <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
+                            <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
+                        </div>
+                        <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     </div>
-                    <p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>
                     <div style='height: 10px;'></div> 
                     </div>
                     """, unsafe_allow_html=True)
