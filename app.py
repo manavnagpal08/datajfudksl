@@ -38,6 +38,10 @@ else:
 reviews_file = "data/reviews.csv"
 if os.path.exists(reviews_file):
     df_reviews = pd.read_csv(reviews_file)
+    # Ensure correct columns
+    for col in ['product_id', 'review', 'sentiment']:
+        if col not in df_reviews.columns:
+            df_reviews[col] = ''
 else:
     df_reviews = pd.DataFrame(columns=['product_id', 'review', 'sentiment'])
     df_reviews.to_csv(reviews_file, index=False)
@@ -91,7 +95,7 @@ else:
             if submit_review and review_text.strip() != "":
                 sentiment = predict_sentiment(review_text)
                 new_review = pd.DataFrame([[product['id'], review_text, sentiment]],
-                                          columns=df_reviews.columns)
+                                          columns=['product_id', 'review', 'sentiment'])
                 df_reviews = pd.concat([df_reviews, new_review], ignore_index=True)
                 df_reviews.to_csv(reviews_file, index=False)
                 st.success(f"Review submitted! Predicted Sentiment: {sentiment}")
