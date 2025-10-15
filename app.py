@@ -1134,7 +1134,7 @@ else:
 
                     st.markdown("""
                     <style>
-                    .custom-btn {
+                    div[data-testid="stButton"] button[kind="secondary"] {{
                         background: linear-gradient(90deg, #6366f1, #4338ca);
                         color: white !important;
                         font-weight: 600;
@@ -1142,30 +1142,24 @@ else:
                         border-radius: 10px;
                         padding: 10px 0;
                         width: 100%;
-                        text-align: center;
                         transition: all 0.3s ease;
-                        cursor: pointer;
-                        margin-top: 5px;
-                    }
-                    .custom-btn:hover {
+                    }}
+                    div[data-testid="stButton"] button[kind="secondary"]:hover {{
                         transform: translateY(-2px);
                         background: linear-gradient(90deg, #4f46e5, #3730a3);
                         box-shadow: 0 4px 12px rgba(99,102,241,0.4);
-                    }
-                    .review-box {
+                    }}
+                    .review-box {{
                         background-color: #f9fafb;
                         border: 1px solid #e5e7eb;
                         border-radius: 10px;
                         padding: 15px;
                         margin-top: 10px;
-                    }
+                    }}
                     </style>
                     """, unsafe_allow_html=True)
 
-                    # --- Beautiful Functional Button ---
-                    if st.markdown(f"<div class='custom-btn'>View Detailed Analytics</div>", unsafe_allow_html=True):
-                        pass
-
+                    # --- Beautiful Single Button ---
                     if st.button("View Detailed Analytics", 
                                  key=f"detail_btn_{product_id}",
                                  on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid, 'product_summary_cache': {}}),
