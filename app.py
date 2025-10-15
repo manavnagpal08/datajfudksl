@@ -1128,25 +1128,67 @@ else:
                     )
 
                     st.markdown(
-                        f"<p style='font-size: 0.75em; color: #888; margin-top: 5px;'>({total_reviews} reviews analyzed)</p>", 
+                        f"<p style='font-size: 0.8em; color: #6b7280; text-align:center; margin-top: 8px;'>⭐ {total_reviews} reviews analyzed</p>", 
                         unsafe_allow_html=True
                     )
 
-                    
-                    st.button("View Detail Analytics", 
-                              key=f"detail_btn_{product_id}",
-                              on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid, 'product_summary_cache': {}}), 
-                              use_container_width=True)
+                    st.markdown("""
+                    <style>
+                    .custom-btn {
+                        background: linear-gradient(90deg, #6366f1, #4338ca);
+                        color: white !important;
+                        font-weight: 600;
+                        border: none;
+                        border-radius: 10px;
+                        padding: 10px 0;
+                        width: 100%;
+                        transition: all 0.3s ease;
+                        text-align: center;
+                        display: inline-block;
+                    }
+                    .custom-btn:hover {
+                        transform: translateY(-2px);
+                        background: linear-gradient(90deg, #4f46e5, #3730a3);
+                        box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+                    }
+                    .review-box {
+                        background-color: #f9fafb;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 10px;
+                        padding: 15px;
+                        margin-top: 10px;
+                    }
+                    .review-box textarea {
+                        border-radius: 8px;
+                        border: 1px solid #d1d5db;
+                        padding: 8px;
+                        width: 100%;
+                        font-size: 0.9em;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
 
-                    with st.expander(f"Write a Review for {product['name']}"):
+                    st.markdown(
+                        f"<div class='custom-btn' onclick=\"window.dispatchEvent(new Event('customClick_{product_id}'))\">View Detail Analytics</div>",
+                        unsafe_allow_html=True
+                    )
+
+                    if st.button("View Detail Analytics", 
+                                 key=f"detail_btn_{product_id}",
+                                 on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid, 'product_summary_cache': {}}), 
+                                 use_container_width=True):
+                        pass  # Hidden actual click handler, styled version shown above
+
+                    with st.expander(f"📝 Write a Review for {product['name']}", expanded=False):
+                        st.markdown("<div class='review-box'>", unsafe_allow_html=True)
                         review_text = st.text_area("Your review here:", key=f"review_text_{product_id}")
                         submit_review = st.button("Submit Review & See Sentiment", key=f"submit_review_{product_id}")
-                        
+
                         if submit_review and review_text.strip() != "":
                             if model_ready:
                                 sentiment = predict_sentiment(review_text, st.session_state['vectorizer'], st.session_state['clf'])
                                 new_review = pd.DataFrame([
-                                    {
+                                    {{
                                         'product_id': product_id, 
                                         'review': review_text, 
                                         'sentiment': sentiment, 
@@ -1155,18 +1197,19 @@ else:
                                         'downvotes': 0,
                                         'reviewer_type': random.choice(['Verified Buyer', 'Guest']),
                                         'manager_reply': None
-                                    }
+                                    }}
                                 ])
                                 
                                 st.session_state['df_reviews'] = pd.concat([st.session_state['df_reviews'], new_review], ignore_index=True)
                                 save_reviews()
                                 
                                 emoji_result = POSITIVE_EMOJI if sentiment=="Positive" else NEUTRAL_EMOJI if sentiment=="Neutral" else NEGATIVE_EMOJI
-                                st.success(f"Review submitted! Predicted Sentiment: **{sentiment}** {emoji_result}")
+                                st.success(f"✅ Review submitted! Predicted Sentiment: **{sentiment}** {emoji_result}")
                                 st.cache_data.clear()
                                 st.rerun() 
                             else:
-                                st.error("Cannot submit review: Sentiment model is not loaded.")
+                                st.error("⚠️ Cannot submit review: Sentiment model is not loaded.")
+                        st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------
         # Dashboard Tabs 
