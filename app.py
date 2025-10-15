@@ -1142,9 +1142,10 @@ else:
                         border-radius: 10px;
                         padding: 10px 0;
                         width: 100%;
-                        transition: all 0.3s ease;
                         text-align: center;
-                        display: inline-block;
+                        transition: all 0.3s ease;
+                        cursor: pointer;
+                        margin-top: 5px;
                     }
                     .custom-btn:hover {
                         transform: translateY(-2px);
@@ -1158,26 +1159,18 @@ else:
                         padding: 15px;
                         margin-top: 10px;
                     }
-                    .review-box textarea {
-                        border-radius: 8px;
-                        border: 1px solid #d1d5db;
-                        padding: 8px;
-                        width: 100%;
-                        font-size: 0.9em;
-                    }
                     </style>
                     """, unsafe_allow_html=True)
 
-                    st.markdown(
-                        f"<div class='custom-btn' onclick=\"window.dispatchEvent(new Event('customClick_{product_id}'))\">View Detail Analytics</div>",
-                        unsafe_allow_html=True
-                    )
+                    # --- Beautiful Functional Button ---
+                    if st.markdown(f"<div class='custom-btn'>View Detailed Analytics</div>", unsafe_allow_html=True):
+                        pass
 
-                    if st.button("View Detail Analytics", 
+                    if st.button("View Detailed Analytics", 
                                  key=f"detail_btn_{product_id}",
-                                 on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid, 'product_summary_cache': {}}), 
+                                 on_click=lambda pid=product_id: st.session_state.update({'show_detail_id': pid, 'product_summary_cache': {}}),
                                  use_container_width=True):
-                        pass  # Hidden actual click handler, styled version shown above
+                        pass
 
                     with st.expander(f"📝 Write a Review for {product['name']}", expanded=False):
                         st.markdown("<div class='review-box'>", unsafe_allow_html=True)
@@ -1210,6 +1203,7 @@ else:
                             else:
                                 st.error("⚠️ Cannot submit review: Sentiment model is not loaded.")
                         st.markdown("</div>", unsafe_allow_html=True)
+
 
         # ----------------------------
         # Dashboard Tabs 
