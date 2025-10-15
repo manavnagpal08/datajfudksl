@@ -1,28 +1,28 @@
 id,name,price,region,image_url,description,category
-P001,Wireless Headphones,2499.99,North,https://example.com/images/headphones.jpg,High-quality wireless headphones with noise cancellation and 20-hour battery life.,Electronics
-P002,Smartwatch,4999.0,West,https://example.com/images/smartwatch.jpg,Feature-packed smartwatch with fitness tracking and water resistance.,Wearables
-P003,Bluetooth Speaker,1799.5,East,https://example.com/images/speaker.jpg,"Portable speaker with rich bass, Bluetooth 5.0, and 10-hour playback time.",Electronics
-P004,Wireless Mouse,799.0,South,https://example.com/images/mouse.jpg,Ergonomic wireless mouse with adjustable DPI.,Electronics
-P005,Laptop Stand,999.0,Central,https://example.com/images/laptopstand.jpg,Adjustable aluminum laptop stand for better posture and cooling.,Accessories
-P006,Noise Cancelling Earbuds,3299.0,North,https://example.com/images/earbuds.jpg,Compact earbuds with active noise cancellation and long battery life.,Electronics
-P007,Smart Home Plug,899.0,West,https://example.com/images/smartplug.jpg,Control your devices remotely via voice or app.,Smart Devices
-P008,Gaming Keyboard,2499.0,East,https://example.com/images/keyboard.jpg,RGB mechanical keyboard for pro gamers.,Electronics
-P009,Eco-Friendly Water Bottle,699.0,South,https://example.com/images/bottle.jpg,"Reusable stainless steel bottle, keeps drinks hot or cold for hours.",Home & Kitchen
-P010,Electric Kettle,1199.0,Central,https://example.com/images/kettle.jpg,Quick-boil kettle with auto shut-off and LED indicator.,Home & Kitchen
-P011,Air Fryer,5499.0,North,https://example.com/images/airfryer.jpg,Fry your favorite foods with up to 90% less oil.,Home & Kitchen
-P012,Induction Cooktop,2999.0,West,https://example.com/images/induction.jpg,Fast and efficient induction stove with touch controls.,Home & Kitchen
-P013,Vacuum Cleaner,6499.0,East,https://example.com/images/vacuum.jpg,Bagless vacuum cleaner with powerful suction and HEPA filter.,Home Appliances
-P014,Yoga Mat,1299.75,Central,https://example.com/images/yogamat.jpg,"Non-slip, eco-friendly yoga mat ideal for all workouts.",Fitness
-P015,Resistance Bands Set,999.0,North,https://example.com/images/bands.jpg,Set of 5 resistance bands for strength training.,Fitness
-P016,Dumbbell Set,2499.0,West,https://example.com/images/dumbbells.jpg,Adjustable dumbbells suitable for home workouts.,Fitness
-P017,Foam Roller,799.0,East,https://example.com/images/foamroller.jpg,Helps relieve sore muscles and improve flexibility.,Fitness
-P018,Leather Wallet,1199.0,South,https://example.com/images/wallet.jpg,Genuine leather wallet with multiple compartments.,Fashion
-P019,Sunglasses,899.0,Central,https://example.com/images/sunglasses.jpg,UV-protected unisex sunglasses with a stylish frame.,Fashion
-P020,Wrist Watch,3499.0,North,https://example.com/images/watch.jpg,Classic wrist watch with analog display.,Fashion
-P021,Backpack,1799.0,West,https://example.com/images/backpack.jpg,Durable backpack with multiple compartments and laptop sleeve.,Accessories
-P022,Sneakers,2999.0,East,https://example.com/images/sneakers.jpg,Comfortable sneakers with breathable mesh design.,Fashion
-P023,Face Moisturizer,599.0,South,https://example.com/images/moisturizer.jpg,Hydrating moisturizer suitable for all skin types.,Beauty
-P024,Hair Dryer,1999.0,Central,https://example.com/images/hairdryer.jpg,Powerful yet compact hair dryer with 3 heat settings.,Beauty
-P025,Electric Toothbrush,1499.0,North,https://example.com/images/toothbrush.jpg,Rechargeable toothbrush for deep and effective cleaning.,Personal Care
-P026,Beard Trimmer,1799.0,West,https://example.com/images/trimmer.jpg,Precision trimmer with multiple length settings.,Personal Care
-P027,Perfume Spray,1299.0,East,https://example.com/images/perfume.jpg,Long-lasting fragrance for daily wear.,Beauty
+P001,Wireless Headphones,2499.99,North,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSarTGcOLHF0ydcgpQjcxXxswOhJfcyI1Gigg&s,High-quality wireless headphones with noise cancellation and 20-hour battery life.,Electronics
+P002,Smartwatch,4999,West,"https://m.media-amazon.com/images/I/61pIzNaNRWL._UF1000,1000_QL80_.jpg",Feature-packed smartwatch with fitness tracking and water resistance.,Wearables
+P003,Bluetooth Speaker,1799.5,East,https://avstore.in/cdn/shop/files/2.AVStore-JBL-PartyBox-110-160W-Portable-Wireless-Speaker-Front-Left-Angled-View.jpg?v=1682411625&width=2000,"Portable speaker with rich bass, Bluetooth 5.0, and 10-hour playback time.",Electronics
+P004,Wireless Mouse,799,South,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1EOgfsvcz9CrhHHTGIZ_JAsU4KxUvmUv1wA&s,Ergonomic wireless mouse with adjustable DPI.,Electronics
+P005,Laptop Stand,999,Central,https://alogic.in/cdn/shop/files/Alogic_Elite_Power_Laptop_Stand_With_Wireless_Charger_Black_1.webp?v=1719555163&width=1200,Adjustable aluminum laptop stand for better posture and cooling.,Accessories
+P006,Noise Cancelling Earbuds,3299,North,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4IHtimUJWzId5jDIRqibSlWGxsP0AJQ8iHQ&s,Compact earbuds with active noise cancellation and long battery life.,Electronics
+P007,Smart Home Plug,899,West,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDyXllYV_WWUj7o-S-0HLa-Jo7N11lGRt-UQ&s,Control your devices remotely via voice or app.,Smart Devices
+P008,Gaming Keyboard,2499,East,https://images-cdn.ubuy.co.in/63400c68afe02d2b0c7aeb85-mechanical-gaming-keyboard-87-keys-small.jpg,RGB mechanical keyboard for pro gamers.,Electronics
+P009,Eco-Friendly Water Bottle,699,South,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzXWP1M7L2LQQat1xAqIXox2DGioyJ8RXvnQ&s,"Reusable stainless steel bottle, keeps drinks hot or cold for hours.",Home & Kitchen
+P010,Electric Kettle,1199,Central,"https://www.jiomart.com/images/product/original/491373220/prestige-1-5-litres-1500-watts-electric-kettle-pkoss-digital-o491373220-p491373220-0-202010110045.jpeg?im=Resize=(1000,1000)",Quick-boil kettle with auto shut-off and LED indicator.,Home & Kitchen
+P011,Air Fryer,5499,North,"https://m.media-amazon.com/images/I/81UnVRZkvbL._UF894,1000_QL80_.jpg",Fry your favorite foods with up to 90% less oil.,Home & Kitchen
+P012,Induction Cooktop,2999,West,"https://m.media-amazon.com/images/I/714AgAXUBeL._UF350,350_QL80_.jpg",Fast and efficient induction stove with touch controls.,Home & Kitchen
+P013,Vacuum Cleaner,6499,East,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdxGxb8YLXq-fzUQVthQ8b313rb2pcUvCwmQ&s,Bagless vacuum cleaner with powerful suction and HEPA filter.,Home Appliances
+P014,Yoga Mat,1299.75,Central,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShe19dG4JJgzXrRsJWC45Rbn2Q-J0S_3WK4w&s,"Non-slip, eco-friendly yoga mat ideal for all workouts.",Fitness
+P015,Resistance Bands Set,999,North,https://m.media-amazon.com/images/I/81bDXpV3atL.jpg,Set of 5 resistance bands for strength training.,Fitness
+P016,Dumbbell Set,2499,West,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsffxhu65yTNiELk1_5Ssy1p6KQYXT-ZNuDA&s,Adjustable dumbbells suitable for home workouts.,Fitness
+P017,Foam Roller,799,East,https://nwscdn.com/media/catalog/product/cache/h900xw900/b/l/black-foamroller-main1.jpg,Helps relieve sore muscles and improve flexibility.,Fitness
+P018,Leather Wallet,1199,South,https://m.media-amazon.com/images/I/81WIcyHQ7oL._UY1100_.jpg,Genuine leather wallet with multiple compartments.,Fashion
+P019,Sunglasses,899,Central,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnHTU2yTruWq7FUIULUAqukEfcd10k5pybqg&s,UV-protected unisex sunglasses with a stylish frame.,Fashion
+P020,Wrist Watch,3499,North,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvZyG1fMXTL7m71Zu22UIOINPgcdjwFTYbng&s,Classic wrist watch with analog display.,Fashion
+P021,Backpack,1799,West,https://safaribags.com/cdn/shop/files/2_3d6acc65-50a9-4d45-b83c-31bb315d7b05.jpg?v=1707731912,Durable backpack with multiple compartments and laptop sleeve.,Accessories
+P022,Sneakers,2999,East,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQprRpaHV0wgWwgqL4y6EbaKJhMwxEm2phbHA&s,Comfortable sneakers with breathable mesh design.,Fashion
+P023,Face Moisturizer,599,South,https://images.mamaearth.in/catalog/product/r/i/rice-gel-moisturizer-1.jpg?format=auto&height=600,Hydrating moisturizer suitable for all skin types.,Beauty
+P024,Hair Dryer,1999,Central,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_WY1yltW-hJmXNyNFNOGBI00wlCGys49NZg&s,Powerful yet compact hair dryer with 3 heat settings.,Beauty
+P025,Electric Toothbrush,1499,North,"https://m.media-amazon.com/images/I/61U8eOQ57NL._UF1000,1000_QL80_.jpg",Rechargeable toothbrush for deep and effective cleaning.,Personal Care
+P026,Beard Trimmer,1799,West,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9wTX-5GnlrH8hY5jztjQo3hj_TevLqbm3OQ&s,Precision trimmer with multiple length settings.,Personal Care
+P027,Perfume Spray,1299,East,https://5.imimg.com/data5/ANDROID/Default/2022/9/SC/KF/JX/160160204/product-jpeg.jpg,Long-lasting fragrance for daily wear.,Beauty
