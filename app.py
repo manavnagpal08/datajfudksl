@@ -1045,25 +1045,80 @@ else:
                     neg_percent = f"{neg_percent_val:.0f}%"                    
                     category = product['category']
                     category_icon = CATEGORY_ICONS.get(category, CATEGORY_ICONS['Uncategorized'])
-                                            
+                                                                
                     st.markdown(f"""
+                    <style>
+                    .product-card {{
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                        transition: all 0.3s ease;
+                        padding: 20px;
+                        text-align: center;
+                        border: 1px solid #f1f1f1;
+                    }}
+                    .product-card:hover {{
+                        transform: translateY(-5px);
+                        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+                    }}
+                    .product-card img {{
+                        border-radius: 12px;
+                        margin-bottom: 15px;
+                        width: 150px;
+                        height: 150px;
+                        object-fit: cover;
+                        border: 1px solid #e5e7eb;
+                    }}
+                    .product-card h4 {{
+                        font-size: 1.1em;
+                        color: #4338ca;
+                        font-weight: 700;
+                        height: 45px;
+                        overflow: hidden;
+                        margin-bottom: 6px;
+                    }}
+                    .product-card p.category {{
+                        font-size: 0.9em;
+                        color: #6366f1;
+                        font-weight: bold;
+                        margin-bottom: 12px;
+                    }}
+                    .price-tag {{
+                        font-size: 1.2em;
+                        font-weight: 700;
+                        color: #1f2937;
+                        margin-bottom: 12px;
+                    }}
+                    .sentiment-bar {{
+                        display: flex;
+                        justify-content: space-around;
+                        font-size: 0.85em;
+                        margin-top: 15px;
+                        padding: 10px;
+                        background-color: #f9fafb;
+                        border-radius: 10px;
+                    }}
+                    .pos-text {{ color: #22c55e; font-weight: 600; }}
+                    .neu-text {{ color: #9ca3af; font-weight: 600; }}
+                    .neg-text {{ color: #ef4444; font-weight: 600; }}
+                    </style>
+
                     <div class="product-card">
                         <div class='card-content'>
-                            <h4 style="height: 40px; overflow: hidden; color: #4338ca;">{product['name']}</h4>
-                            <p style='font-size: 0.9em; color: #6366f1; font-weight: bold; margin-bottom: 10px;'>{category_icon} {category}</p>
+                            <h4>{product['name']}</h4>
+                            <p class='category'>{category_icon} {category}</p>
                             <img src="{product['image_url']}" 
-                                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/d1d5db/000000?text=No+Image';" 
-                                 width="150" 
-                                 style="border-radius: 5px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
-                            <p style='font-size: 1.2em; font-weight: 700; color: #1f2937;'>Price: ₹{product['price']:.2f}</p>
+                                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/e5e7eb/000000?text=No+Image';">
+                            <p class='price-tag'>₹{product['price']:.2f}</p>
                         </div>
-                        <div style='display: flex; justify-content: space-around; font-size: 0.85em; margin-top: 15px; padding: 10px; background-color: #f7f7f7; border-radius: 8px;'>
+                        <div class='sentiment-bar'>
                             <span class='pos-text'>{POSITIVE_EMOJI} {pos_percent}</span>
                             <span class='neu-text'>{NEUTRAL_EMOJI} {neu_percent}</span>
                             <span class='neg-text'>{NEGATIVE_EMOJI} {neg_percent}</span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
+
 
                     st.plotly_chart(
                         fig_gauge, 
