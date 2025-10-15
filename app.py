@@ -918,19 +918,6 @@ else:
                         st.success("No critical sentiment anomalies detected.")
 
                 
-                # Export to CSV
-                with col_export:
-                    @st.cache_data
-                    def convert_df_to_csv(df):
-                        return df.to_csv(index=False).encode('utf-8')
-
-                    csv_data = convert_df_to_csv(st.session_state['df_reviews'])
-                    st.download_button(
-                        label="Export All Reviews to CSV",
-                        data=csv_data,
-                        file_name=f'reviews_export_{datetime.now().strftime("%Y%m%d")}.csv',
-                        mime='text/csv',
-                    )
 
 
         st.header("🛍 Product Catalog")
