@@ -794,8 +794,7 @@ else:
         
     else:
         st.title("🛒 E-Commerce Platform with Interactive Sentiment Analytics")
-
-        # --- ADMIN PANEL ---
+        
         if st.session_state['current_role'] == "Admin":
             with st.expander("👑 Administrator Tools & Alerts", expanded=False):
                 st.markdown("### Product Catalog Inline Editor")
@@ -815,44 +814,62 @@ else:
                 )
                 
                 if st.button("Confirm & Save Catalog Changes", key="save_catalog_btn"):
-                    # Process and save the edited DataFrame
-                    
-                    # 1. Handle new rows (assign new max ID)
+                    # Handle new rows (assign new max ID)
                     new_rows = edited_df[edited_df['id'].isnull()]
                     current_max_id = st.session_state['df_products']['id'].max() if not st.session_state['df_products'].empty else 0
-                    
                     for index, row in new_rows.iterrows():
                         current_max_id += 1
                         edited_df.loc[index, 'id'] = current_max_id
                     
-                    # 2. Update session state and save
-                    st.session_state['df_products'] = edited_df.dropna(subset=['name', 'price']) # remove rows with no name/price
+                    # Update session state and save
+                    st.session_state['df_products'] = edited_df.dropna(subset=['name', 'price'])
                     save_products()
                     st.success("Product Catalog updated successfully.")
                     st.rerun()
-
-                st.markdown("---")
-                st.markdown("### Review Data Management")
-                col_up, col_alert, col_export = st.columns(3)
                 
+                st.markdown("---")
+                st.markdown("### Bulk Product Upload")
+                col_prod_upload, col_review_upload, col_alert = st.columns(3)
+
+                # Product CSV Upload
+                with col_prod_upload:
+                    uploaded_prod_file = st.file_uploader("Upload Products CSV (.csv)", type="csv")
+                    if uploaded_prod_file is not None:
+                        try:
+                            new_products_df = pd.read_csv(uploaded_prod_file)
+                            required_cols = ['name', 'price', 'category']
+                            if all(col in new_products_df.columns for col in required_cols):
+                                # Assign new IDs if not provided
+                                current_max_id = st.session_state['df_products']['id'].max() if not st.session_state['df_products'].empty else 0
+                                if 'id' not in new_products_df.columns:
+                                    new_products_df['id'] = [current_max_id + i + 1 for i in range(len(new_products_df))]
+                                else:
+                                    # Fill missing IDs
+                                    new_products_df['id'] = new_products_df['id'].fillna(
+                                        pd.Series([current_max_id + i + 1 for i in range(len(new_products_df))])
+                                    )
+                                st.session_state['df_products'] = pd.concat([st.session_state['df_products'], new_products_df], ignore_index=True)
+                                save_products()
+                                st.success(f"Successfully imported {len(new_products_df)} products!")
+                                st.rerun()
+                            else:
+                                st.error(f"CSV must contain columns: {', '.join(required_cols)}")
+                        except Exception as e:
+                            st.error(f"Failed to read CSV: {e}")
+
                 # Bulk Review Upload
-                with col_up:
+                with col_review_upload:
                     uploaded_file = st.file_uploader("Upload New Reviews (.csv)", type="csv")
                     if uploaded_file is not None:
                         try:
                             new_reviews_df = pd.read_csv(uploaded_file)
-                            
-                            # Standardize columns and add missing ones
                             required_cols = ['product_id', 'review', 'sentiment']
                             if all(col in new_reviews_df.columns for col in required_cols):
-                                
                                 new_reviews_df['timestamp'] = datetime.now()
                                 new_reviews_df['upvotes'] = 0
                                 new_reviews_df['downvotes'] = 0
                                 new_reviews_df['reviewer_type'] = 'Guest'
                                 new_reviews_df['manager_reply'] = None
-                                
-                                # Ensure correct data types
                                 new_reviews_df['product_id'] = pd.to_numeric(new_reviews_df['product_id'], errors='coerce').fillna(0).astype('Int64')
                                 
                                 st.session_state['df_reviews'] = pd.concat([st.session_state['df_reviews'], new_reviews_df], ignore_index=True)
@@ -863,39 +880,33 @@ else:
                                 st.error(f"CSV must contain columns: {', '.join(required_cols)}")
                         except Exception as e:
                             st.error(f"Failed to read CSV: {e}")
-                            
+                
                 # Anomaly Alert Logic
                 with col_alert:
                     st.markdown("#### Anomaly Alerts (Sentiment Drop)")
-                    
                     today = datetime.now().date()
                     seven_days_ago = today - timedelta(days=7)
                     fourteen_days_ago = today - timedelta(days=14)
                     
-                    # 1. Calculate Neg_Percent for Last 7 days
                     last_week_reviews = df_reviews[df_reviews['timestamp'].dt.date > seven_days_ago]
                     last_week_stats = last_week_reviews.groupby('product_id')['sentiment'].value_counts().unstack(fill_value=0)
                     last_week_stats['Total'] = last_week_stats.sum(axis=1)
                     last_week_stats['Neg_Rate_LW'] = (last_week_stats.get('Negative', 0) / last_week_stats['Total']) * 100
                     
-                    # 2. Calculate Neg_Percent for Previous 7 days
                     prev_week_reviews = df_reviews[(df_reviews['timestamp'].dt.date <= seven_days_ago) & (df_reviews['timestamp'].dt.date > fourteen_days_ago)]
                     prev_week_stats = prev_week_reviews.groupby('product_id')['sentiment'].value_counts().unstack(fill_value=0)
                     prev_week_stats['Total'] = prev_week_stats.sum(axis=1)
                     prev_week_stats['Neg_Rate_PW'] = (prev_week_stats.get('Negative', 0) / prev_week_stats['Total']) * 100
 
-                    # 3. Merge and Compare
                     anomaly_check = last_week_stats.merge(
                         prev_week_stats['Neg_Rate_PW'], 
                         left_index=True, 
                         right_index=True, 
                         how='inner'
                     ).fillna(0)
-                    
                     anomaly_check['Neg_Rate_Change'] = anomaly_check['Neg_Rate_LW'] - anomaly_check['Neg_Rate_PW']
                     anomaly_check = anomaly_check[
-                        (anomaly_check['Neg_Rate_Change'] > 15) & # Negative Rate increased by more than 15%
-                        (anomaly_check['Total'] >= 5) # Ensure sufficient review volume
+                        (anomaly_check['Neg_Rate_Change'] > 15) & (anomaly_check['Total'] >= 5)
                     ].sort_values(by='Neg_Rate_Change', ascending=False)
                     
                     if not anomaly_check.empty:
@@ -905,6 +916,7 @@ else:
                             st.error(f"🚨 **{product_name}**: Negativity up {change:.1f}%!")
                     else:
                         st.success("No critical sentiment anomalies detected.")
+
                 
                 # Export to CSV
                 with col_export:
