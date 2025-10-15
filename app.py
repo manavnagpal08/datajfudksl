@@ -1175,7 +1175,7 @@ else:
                             if model_ready:
                                 sentiment = predict_sentiment(review_text, st.session_state['vectorizer'], st.session_state['clf'])
                                 new_review = pd.DataFrame([
-                                    {{
+                                    {
                                         'product_id': product_id, 
                                         'review': review_text, 
                                         'sentiment': sentiment, 
@@ -1184,7 +1184,7 @@ else:
                                         'downvotes': 0,
                                         'reviewer_type': random.choice(['Verified Buyer', 'Guest']),
                                         'manager_reply': None
-                                    }}
+                                    }
                                 ])
                                 
                                 st.session_state['df_reviews'] = pd.concat([st.session_state['df_reviews'], new_review], ignore_index=True)
