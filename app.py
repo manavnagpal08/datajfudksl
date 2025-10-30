@@ -40,7 +40,9 @@ CATEGORY_ICONS = {
 USERS = {
     "admin": {"password": "admin123", "role": "Admin"},
     "manager": {"password": "manager123", "role": "Manager"},
-    "user": {"password": "user123", "role": "User"}
+    "user": {"password": "user123", "role": "User"},
+    "Kaaysha": {"password": "123", "role": "User"},
+    "Manav": {"password": "123", "role": "User"}
 }
 
 # --- Internal Review Synthesis Logic & Sentiment Functions ---
